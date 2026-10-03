@@ -127,7 +127,6 @@ function GraphCanvas({
           {data.nodes.map((node) => {
             const point = positions.get(node.id);
             if (!point) return null;
-            const kind = kinds.find((item) => item.id === node.kind)!;
             const selected = node.id === selectedId;
             const inStory = storyIds.has(node.id);
             const lines = shortLabel(node.label);
@@ -218,8 +217,6 @@ function App() {
   const awardTotal = data?.edges
     .filter((edge) => edge.relationship_type === "wybrano wykonawcę")
     .reduce((sum, edge) => sum + Number(edge.amount_pln ?? 0), 0) ?? 0;
-  const singleOfferTender = data?.nodes.find((node) => node.kind === "procurement" && Number(node.details.offers) === 1);
-
   function toggleKind(kind: NodeKind) {
     setVisibleKinds((current) => {
       if (current.includes(kind) && current.length === 1) return current;

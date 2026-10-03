@@ -19,7 +19,7 @@ from urllib.parse import urlencode
 import httpx
 from sqlalchemy.orm import Session
 
-from .database import SessionLocal
+from .database import Base, SessionLocal, engine
 from .models import GraphEdge, GraphNode
 
 DEFAULT_BZP_URL = "https://ezamowienia.gov.pl/mo-board/api/v1/notice"
@@ -173,7 +173,6 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         "contractorName",
         "winnerName",
         "winningSupplierName",
-        "contractorName",
         "supplierName",
         "winner",
         "contractor",
@@ -390,6 +389,7 @@ def main() -> None:
         snapshot.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         raise SystemExit(f"{error} Odpowiedź zapisana do {snapshot}.") from error
 
+    Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
         count = save_notices(session, rows, city_filter=args.city, since=cutoff)
     print(f"Zaimportowano lub zaktualizowano {count} ogłoszeń z miasta: {args.city}.")

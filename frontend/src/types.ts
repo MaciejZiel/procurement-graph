@@ -25,6 +25,7 @@ export interface GraphEdge {
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  latest_event_at: string | null;
   data_mode: "demo" | "live";
   notice: string;
 }

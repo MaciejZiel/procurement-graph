@@ -13,6 +13,7 @@ const kindLabels: Record<NodeKind, string> = {
   procurement: "Postępowanie",
   company: "Wykonawca",
 };
+const validKinds: NodeKind[] = ["institution", "procurement", "company"];
 
 function formatMoney(value: unknown): string {
   const amount = Number(value);
@@ -27,6 +28,10 @@ function formatMoney(value: unknown): string {
 function formatDate(value: unknown): string {
   if (typeof value !== "string" || !value) return "Brak daty";
   return new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium" }).format(new Date(value));
+}
+
+function dateInputValue(value: Date): string {
+  return [value.getFullYear(), String(value.getMonth() + 1).padStart(2, "0"), String(value.getDate()).padStart(2, "0")].join("-");
 }
 
 function getNodePositions(nodes: GraphNode[]) {
@@ -178,20 +183,39 @@ function GraphCanvas({
 function App() {
   const [data, setData] = useState<GraphData | null>(null);
   const [stories, setStories] = useState<Story[]>([]);
-  const [query, setQuery] = useState("");
-  const [visibleKinds, setVisibleKinds] = useState<NodeKind[]>(["institution", "procurement", "company"]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
+  const [visibleKinds, setVisibleKinds] = useState<NodeKind[]>(() => {
+    const selected = new URLSearchParams(window.location.search).get("types");
+    if (!selected) return validKinds;
+    const parsed = selected.split(",").filter((kind): kind is NodeKind => validKinds.includes(kind as NodeKind));
+    return parsed.length ? parsed : validKinds;
+  });
+  const [selectedId, setSelectedId] = useState<string | null>(() => new URLSearchParams(window.location.search).get("node"));
   const [activeStory, setActiveStory] = useState<Story | null>(null);
+  const [dataset, setDataset] = useState<"demo" | "live">(() => new URLSearchParams(window.location.search).get("dataset") === "live" ? "live" : "demo");
+  const [dateWindow, setDateWindow] = useState(() => {
+    const selected = new URLSearchParams(window.location.search).get("period");
+    return selected === "12m" || selected === "all" ? selected : "24m";
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
 
-  async function loadGraph(nextQuery = query, nextKinds = visibleKinds) {
+  async function loadGraph(nextQuery = query, nextKinds = visibleKinds, nextDateWindow = dateWindow, nextDataset = dataset) {
     setLoading(true);
     setError(null);
     try {
-      const next = await fetchGraph({ query: nextQuery, kinds: nextKinds });
+      const today = new Date();
+      const since = nextDateWindow === "all" ? undefined : dateInputValue(new Date(today.getFullYear() - (nextDateWindow === "24m" ? 2 : 1), today.getMonth(), today.getDate()));
+      const next = await fetchGraph({
+        query: nextQuery,
+        kinds: nextKinds,
+        dataset: nextDataset,
+        since,
+        until: nextDateWindow === "all" ? undefined : dateInputValue(today),
+      });
       setData(next);
       setSelectedId((current) => next.nodes.some((node) => node.id === current) ? current : next.nodes[0]?.id ?? null);
     } catch (caught) {
@@ -202,21 +226,32 @@ function App() {
   }
 
   useEffect(() => {
-    fetchStories().then(setStories).catch(() => setStories([]));
+    fetchStories().then((items) => {
+      setStories(items);
+      const sharedStory = new URLSearchParams(window.location.search).get("story");
+      const match = items.find((item) => item.id === sharedStory);
+      if (match) {
+        setActiveStory(match);
+        setSelectedId(match.node_ids[0] ?? null);
+        setDataset("demo");
+      }
+    }).catch(() => setStories([]));
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void loadGraph(query, visibleKinds), 180);
+    const timer = window.setTimeout(() => void loadGraph(query, visibleKinds, dateWindow, dataset), 180);
     return () => window.clearTimeout(timer);
-  }, [query, visibleKinds]);
+  }, [query, visibleKinds, dateWindow, dataset]);
 
   const selectedNode = data?.nodes.find((node) => node.id === selectedId) ?? null;
   const relatedEdges = data?.edges.filter((edge) => edge.source_id === selectedId || edge.target_id === selectedId) ?? [];
   const institutions = data?.nodes.filter((node) => node.kind === "institution").length ?? 0;
   const tenders = data?.nodes.filter((node) => node.kind === "procurement").length ?? 0;
-  const awardTotal = data?.edges
+  const awardEdges = data?.edges
     .filter((edge) => edge.relationship_type === "wybrano wykonawcę")
-    .reduce((sum, edge) => sum + Number(edge.amount_pln ?? 0), 0) ?? 0;
+    ?? [];
+  const valuedAwards = awardEdges.filter((edge) => edge.amount_pln !== null);
+  const awardTotal = valuedAwards.reduce((sum, edge) => sum + Number(edge.amount_pln ?? 0), 0);
   function toggleKind(kind: NodeKind) {
     setVisibleKinds((current) => {
       if (current.includes(kind) && current.length === 1) return current;
@@ -230,9 +265,20 @@ function App() {
     const url = new URL(window.location.href);
     if (selectedId) url.searchParams.set("node", selectedId);
     if (activeStory) url.searchParams.set("story", activeStory.id);
-    await navigator.clipboard?.writeText(url.toString());
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+    else url.searchParams.delete("story");
+    if (query.trim()) url.searchParams.set("q", query.trim());
+    else url.searchParams.delete("q");
+    url.searchParams.set("period", dateWindow);
+    url.searchParams.set("types", visibleKinds.join(","));
+    url.searchParams.set("dataset", dataset);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(url.toString());
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setError("Przeglądarka zablokowała kopiowanie linku.");
+    }
   }
 
   function exportGraph() {
@@ -247,6 +293,7 @@ function App() {
   }
 
   function openStory(story: Story) {
+    setDataset("demo");
     setActiveStory(story);
     setSelectedId(story.node_ids[0] ?? null);
     setMobileDetailsOpen(false);
@@ -259,7 +306,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
+      <header className={`topbar ${mobileNavOpen ? "nav-open" : ""}`}>
         <a className="brand" href="#top" aria-label="Jawny Ślad — strona główna">
           <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <span className="brand-wordmark">JAWNY<span>ŚLAD</span></span>
@@ -270,9 +317,9 @@ function App() {
           <a href="#methodology">Metodologia</a>
         </nav>
         <div className="top-meta">
-          <span className="data-status"><i /> DEMO / WARSZAWA</span>
+          <span className="data-status"><i /> {dataset === "demo" ? "DEMO / WARSZAWA" : "BZP / WARSZAWA"}</span>
           <a className="github-link" href="#methodology">O projekcie <Symbol name="arrow" /></a>
-          <button className="mobile-menu" aria-label="Otwórz menu"><Symbol name="menu" /></button>
+          <button className="mobile-menu" aria-label="Otwórz menu" aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen((open) => !open)}><Symbol name="menu" /></button>
         </div>
       </header>
 
@@ -290,9 +337,9 @@ function App() {
           </div>
         </section>
 
-        <section className="demo-ribbon" aria-label="Informacja o danych">
-          <div className="ribbon-stamp">DEMO</div>
-          <p><strong>Scenariusz demonstracyjny.</strong> Widoczne tu podmioty i zamówienia są fikcyjne. Nie opisują prawdziwych relacji.</p>
+        <section className={`demo-ribbon ${dataset === "live" ? "source-ribbon" : ""}`} aria-label="Informacja o danych">
+          <div className="ribbon-stamp">{dataset === "demo" ? "DEMO" : "BZP"}</div>
+          <p>{dataset === "demo" ? <><strong>Scenariusz demonstracyjny.</strong> Widoczne tu podmioty i zamówienia są fikcyjne. Nie opisują prawdziwych relacji.</> : <><strong>Dane źródłowe BZP.</strong> Sprawdź każde połączenie w opublikowanym ogłoszeniu.</>}</p>
           <span className="ribbon-location">WARSZAWA <b>·</b> POLSKA</span>
         </section>
 
@@ -300,13 +347,13 @@ function App() {
           <div className="metric-cell"><span>WĘZŁY W WIDOKU</span><strong>{data?.nodes.length ?? "—"}<small> elementów</small></strong></div>
           <div className="metric-cell"><span>INSTYTUCJE</span><strong>{institutions.toString().padStart(2, "0")}</strong></div>
           <div className="metric-cell"><span>POSTĘPOWANIA</span><strong>{tenders.toString().padStart(2, "0")}</strong></div>
-          <div className="metric-cell metric-total"><span>WARTOŚĆ WIDOCZNYCH UMÓW</span><strong>{formatMoney(awardTotal)}</strong></div>
-          <div className="metric-footnote">Wartości z przykładowych rekordów demo</div>
+          <div className="metric-cell metric-total"><span>WARTOŚĆ WIDOCZNYCH UMÓW</span><strong>{valuedAwards.length ? formatMoney(awardTotal) : "—"}</strong></div>
+          <div className="metric-footnote">{dataset === "demo" ? "Wartości z przykładowych rekordów demo" : "Wartości z zaimportowanych ogłoszeń BZP"}</div>
         </section>
 
         <section className="workbench" aria-label="Eksplorator powiązań">
           <aside className="left-rail">
-            <div className="rail-heading"><span>01 / WARSZAWA</span><button aria-label="Ustawienia widoku">•••</button></div>
+            <div className="rail-heading"><span>01 / WARSZAWA</span><span>TYLKO ODCZYT</span></div>
             <div className="search-field">
               <Symbol name="search" />
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Szukaj w danych" aria-label="Szukaj instytucji, firmy lub postępowania" />
@@ -347,16 +394,25 @@ function App() {
           <section className="graph-panel" aria-label="Mapa powiązań">
             <div className="panel-toolbar">
               <div>
-                <div className="panel-kicker">MAPA RELACJI <span>·</span> SCENARIUSZ DEMO</div>
+                <div className="panel-kicker">MAPA RELACJI <span>·</span> {dataset === "demo" ? "SCENARIUSZ DEMO" : "DANE BZP"}</div>
                 <h2>{activeStory?.title ?? "Przepływ zamówień"}</h2>
               </div>
               <div className="toolbar-actions">
+                <label className="date-select data-select"><span>ZBIÓR</span><select value={dataset} onChange={(event) => { setDataset(event.target.value as "demo" | "live"); setActiveStory(null); }} aria-label="Wybierz dane demonstracyjne lub BZP">
+                  <option value="demo">Scenariusz demo</option>
+                  <option value="live">Zaimportowane BZP</option>
+                </select></label>
+                <label className="date-select"><span>OKRES</span><select value={dateWindow} onChange={(event) => setDateWindow(event.target.value)} aria-label="Zakres dat">
+                  <option value="24m">Ostatnie 2 lata</option>
+                  <option value="12m">Ostatnie 12 miesięcy</option>
+                  <option value="all">Cały okres</option>
+                </select></label>
                 <button className="icon-button" onClick={() => void shareView()} aria-label="Kopiuj link do widoku" title="Kopiuj link"><Symbol name="share" /></button>
                 <button className="icon-button" onClick={exportGraph} aria-label="Eksportuj widoczne dane" title="Eksportuj JSON"><Symbol name="download" /></button>
               </div>
             </div>
             {copied && <div className="copy-toast" role="status">Link skopiowany</div>}
-            <div className="graph-summary"><span><i className="live-dot" /> DANE DEMONSTRACYJNE</span><span>OSTATNIA AKTUALIZACJA —</span></div>
+            <div className="graph-summary"><span><i className="live-dot" /> {dataset === "demo" ? "DANE DEMONSTRACYJNE" : "OGŁOSZENIA BZP"}</span><span>NAJNOWSZE ZDARZENIE · {formatDate(data?.latest_event_at)}</span></div>
             {loading && <div className="loading-line"><i /> Ładowanie grafu…</div>}
             {error && <div className="api-error" role="alert"><strong>Nie mogę połączyć się z API.</strong><span>{error}</span><button onClick={() => void loadGraph()}>Spróbuj ponownie</button></div>}
             {data && <GraphCanvas data={data} selectedId={selectedId} activeStory={activeStory} onSelect={selectNode} />}
@@ -388,6 +444,7 @@ function App() {
                 {selectedNode.details.reference && <div><span>NUMER POSTĘPOWANIA</span><strong className="mono-value">{selectedNode.details.reference}</strong></div>}
                 {selectedNode.details.published_on && <div><span>DATA OGŁOSZENIA</span><strong>{formatDate(selectedNode.details.published_on)}</strong></div>}
                 {selectedNode.details.sector && <div><span>OBSZAR</span><strong>{selectedNode.details.sector}</strong></div>}
+                {(selectedNode.details.nip || selectedNode.details.tax_id) && <div><span>NIP / REGON</span><strong className="mono-value">{String(selectedNode.details.nip ?? selectedNode.details.tax_id)}</strong></div>}
               </div>
 
               {selectedNode.kind === "procurement" && <div className="contract-card">

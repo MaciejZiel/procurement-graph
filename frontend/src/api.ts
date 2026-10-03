@@ -14,11 +14,15 @@ export function fetchGraph(options: {
   query?: string;
   kinds?: string[];
   dataset?: "demo" | "live";
+  since?: string;
+  until?: string;
 } = {}): Promise<GraphData> {
   const params = new URLSearchParams();
   if (options.query?.trim()) params.set("q", options.query.trim());
   for (const kind of options.kinds ?? []) params.append("kinds", kind);
   params.set("dataset", options.dataset ?? "demo");
+  if (options.since) params.set("since", options.since);
+  if (options.until) params.set("until", options.until);
   return getJson<GraphData>(`graph?${params.toString()}`);
 }
 

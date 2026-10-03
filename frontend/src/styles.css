@@ -68,6 +68,8 @@ h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 400; lett
 .intro-side-note a svg, .rail-bottom a svg { width: 13px; }
 
 .demo-ribbon { min-height: 45px; margin: 0 clamp(24px, 4.1vw, 68px); display: flex; align-items: center; gap: 13px; border-block: 1px solid #d8c9ae; color: #66543d; }
+.source-ribbon { border-color: #c4d4c8; color: #4e6e58; }
+.source-ribbon .ribbon-stamp { background: #dce9df; color: #4e6e58; }
 .ribbon-stamp { padding: 4px 6px; background: #eaddc4; color: #735e3e; font: 500 9px var(--mono); letter-spacing: .07em; }
 .demo-ribbon p { margin: 0; font-size: 11px; line-height: 1.45; }
 .demo-ribbon strong { font-weight: 700; }
@@ -125,6 +127,10 @@ h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 400; lett
 .panel-kicker span { padding: 0 3px; color: #c0bdb3; }
 .panel-toolbar h2 { margin: 0; font: 700 18px/1.15 var(--display); letter-spacing: -.04em; }
 .toolbar-actions { display: flex; gap: 6px; }
+.date-select { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 105px; padding: 0 7px; border: 1px solid var(--line); color: #a09e94; }
+.data-select { min-width: 120px; }
+.date-select span { font: 500 7px var(--mono); letter-spacing: .08em; }
+.date-select select { width: 100%; border: 0; padding: 0; outline: 0; background: transparent; color: #65675e; font: 500 9px "DM Sans", sans-serif; cursor: pointer; }
 .icon-button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line); background: #f8f7f2; color: #65675f; cursor: pointer; transition: background .15s, color .15s; }
 .icon-button:hover { background: var(--ink); color: #fff; }
 .graph-summary { display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 0; color: #96948a; font: 9px var(--mono); letter-spacing: .055em; }
@@ -244,6 +250,10 @@ h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 400; lett
   .topbar { height: 60px; padding-inline: 18px; gap: 0; }
   .top-nav, .github-link, .top-meta .data-status { display: none; }
   .mobile-menu { display: block; }
+  .topbar.nav-open .top-nav { position: absolute; z-index: 30; top: 60px; left: 0; right: 0; height: auto; display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 7px 18px; border-bottom: 1px solid var(--line); background: var(--paper); }
+  .topbar.nav-open .top-nav a { height: 40px; justify-items: start; border-bottom: 1px solid var(--line); }
+  .topbar.nav-open .top-nav a:last-child { border-bottom: 0; }
+  .topbar.nav-open .top-nav .nav-active::after { display: none; }
   .intro-section { padding: 35px 20px 25px; }
   .intro-side-note { display: none; }
   .eyebrow { font-size: 8px; letter-spacing: .07em; }
@@ -272,6 +282,12 @@ h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 400; lett
   .graph-panel { min-height: 570px; }
   .panel-toolbar { padding: 14px 13px 11px; }
   .panel-toolbar h2 { font-size: 16px; }
+  .toolbar-actions { gap: 4px; }
+  .panel-toolbar { flex-wrap: wrap; gap: 9px; }
+  .toolbar-actions { width: 100%; justify-content: flex-end; }
+  .date-select { min-width: 0; width: 76px; padding-inline: 5px; }
+  .data-select { width: 88px; }
+  .date-select select { font-size: 8px; }
   .graph-summary { padding-inline: 13px; font-size: 8px; }
   .graph-canvas { min-height: 440px; margin-inline: 0; overflow-x: auto; overflow-y: hidden; }
   .graph-canvas > svg { position: relative; display: block; width: 620px; height: 422px; overflow: visible; }

@@ -329,6 +329,7 @@ def save_notices(
                     is_demo=False,
                 )
             )
+        session.flush()
         imported += 1
     session.commit()
     return imported

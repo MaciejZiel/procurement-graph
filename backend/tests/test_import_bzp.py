@@ -93,6 +93,13 @@ def test_save_is_idempotent_and_reuses_entities(session):
     assert len(awards) == 2
 
 
+def test_save_repeated_entities_in_one_large_batch(session):
+    rows = [notice(str(index), f"Zamówienie {index}") for index in range(20)]
+    assert save_notices(session, rows) == 20
+    assert len(session.scalars(select(GraphNode).where(GraphNode.kind == "institution")).all()) == 1
+    assert len(session.scalars(select(GraphNode).where(GraphNode.kind == "company")).all()) == 1
+
+
 def test_demo_seed_is_idempotent_and_explicitly_marked(session):
     seed_demo_data(session)
     seed_demo_data(session)

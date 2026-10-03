@@ -4,18 +4,19 @@
 
 Jawny Ślad to aplikacja do odkrywania powiązań między instytucjami, wykonawcami i postępowaniami publicznymi. Każde połączenie w grafie prowadzi do informacji o źródle. Aplikacja pokazuje wzorce do sprawdzenia, nie oskarżenia.
 
-![Eksplorator powiązań w trybie demonstracyjnym](docs/dashboard.png)
+![Eksplorator powiązań](docs/dashboard.png)
 
-> **Demo:** obecny zestaw danych jest fikcyjny i służy wyłącznie prezentacji interfejsu. Aplikacja oznacza go jako dane demonstracyjne.
+Po pierwszym uruchomieniu domyślnie otwiera się zbiór BZP: do repozytorium dołączono próbkę 36 prawdziwych ogłoszeń warszawskich zamawiających pobranych 3 października 2026 r. Dane fikcyjne są dostępne oddzielnie jako „Scenariusz demo”. Próbka jest migawką, więc do pracy na większym i aktualnym zbiorze użyj importera.
 
 ## Co działa
 
-- interaktywny graf relacji z panelem szczegółów,
-- wyszukiwanie instytucji, firm i postępowań,
+- interaktywny graf relacji z panelem szczegółów i otwieraniem wybranego postępowania z katalogu,
+- katalog wszystkich zaimportowanych postępowań z wyszukiwaniem, filtrowaniem, sortowaniem i stronicowaniem,
+- wyszukiwanie po tytule, numerze, CPV, zamawiającym i wykonawcy,
 - filtry po rodzaju węzła i okresie,
 - profile podmiotów, źródła oraz gotowe ścieżki demonstracyjne,
 - API FastAPI i warstwa PostgreSQL,
-- importer BZP z filtrem lokalizacji i ponawialnym upsertem,
+- importer BZP z filtrem lokalizacji, wieloma wykonawcami w jednym ogłoszeniu i ponawialnym upsertem,
 - kontenerowy start całego środowiska.
 
 ## Uruchomienie
@@ -40,17 +41,17 @@ npm run dev
 
 Tryb lokalny uruchamia API i frontend razem oraz używa pliku SQLite w ignorowanym katalogu `data/`. Compose uruchamia PostgreSQL i pozostaje właściwą konfiguracją do sprawdzania zachowania aplikacji na docelowej bazie.
 
-Po uruchomieniu Compose można pobrać ogłoszenia z BZP i przełączyć w interfejsie zbiór na „Zaimportowane BZP”:
+Po uruchomieniu Compose można pobrać więcej ogłoszeń z BZP:
 
 ```bash
 docker compose exec backend python -m app.import_bzp --city Warszawa --since 2026-09-01
 ```
 
-Bez `--since` importer pobiera z oficjalnego API ogłoszenia o wyniku postępowania (`TenderResultNotice`) dla Warszawy z ostatnich dwóch lat. Można ustawić `--since YYYY-MM-DD`, `--notice-type`, `--page-size` (maks. 500), `--max-pages` (domyślnie 10) albo podać lokalny JSON przez `--input /app/data/bzp.json`. Po osiągnięciu limitu stron importer informuje, że zbiór może być niepełny. Krawędź do wykonawcy powstaje wyłącznie wtedy, gdy API podaje jego nazwę. Dowód prowadzi do zapytania BZP o konkretne ogłoszenie. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
+Bez `--since` importer pobiera z oficjalnego API ogłoszenia o wyniku postępowania (`TenderResultNotice`) dla Warszawy z ostatnich dwóch lat. Można ustawić `--since YYYY-MM-DD`, `--notice-type`, `--page-size` (maks. 500), `--max-pages` (domyślnie 10) albo podać lokalny JSON przez `--input /app/data/bzp.json`. Po osiągnięciu limitu stron importer informuje, że zbiór może być niepełny. Krawędź do wykonawcy powstaje wyłącznie wtedy, gdy API podaje jego nazwę; jedno postępowanie może mieć wielu wykonawców. Dowód prowadzi do zapytania BZP o konkretne ogłoszenie. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
 
 ## Dane i metodologia
 
-Docelowym źródłem krajowych ogłoszeń jest bezpłatny webserwis BZP platformy e‑Zamówienia: <https://ezamowienia.gov.pl/mo-board/api/v1/notice>. W pierwszej wersji import należy ograniczyć do ogłoszeń warszawskich instytucji z ostatnich dwóch lat; wykonawcy mogą pochodzić z całej Polski. Dane z TED oraz automatyczne wzbogacanie profili z KRS są planowane jako kolejne źródła.
+Źródłem ogłoszeń jest bezpłatny webserwis BZP platformy e‑Zamówienia: <https://ezamowienia.gov.pl/mo-board/api/v1/notice>. Obecny zakres obejmuje ogłoszenia warszawskich instytucji; wykonawcy mogą pochodzić z całej Polski. Dane z TED oraz automatyczne wzbogacanie profili z KRS są planowane jako kolejne źródła.
 
 Źródło: [materiały integracyjne e‑Zamówień](https://ezamowienia.gov.pl/pl/integracja/), w tym specyfikacja OpenAPI BZP. Mapowanie sprawdzono z rzeczywistą odpowiedzią API; przed uruchomieniem produkcyjnym warto ponownie zweryfikować format dostawcy.
 

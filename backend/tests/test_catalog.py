@@ -34,6 +34,21 @@ def test_sample_catalog_supports_pages_filters_and_focused_graph():
         assert page.suppliers_count > 0
         assert all(item.source_url for item in page.items)
 
+        second_page = list_procurements(
+            session,
+            dataset="live",
+            q=None,
+            since=None,
+            until=None,
+            order_type=None,
+            has_supplier=None,
+            sort="newest",
+            page=2,
+            page_size=12,
+        )
+        assert len(second_page.items) == 12
+        assert set(item.id for item in page.items).isdisjoint(item.id for item in second_page.items)
+
         buyer_results = list_procurements(
             session,
             dataset="live",
@@ -63,4 +78,27 @@ def test_sample_catalog_supports_pages_filters_and_focused_graph():
         )
         assert {node.id for node in focused.nodes if node.kind == "procurement"} == {selected.id}
         assert len(focused.edges) >= 2
+
+        searched = graph(
+            q="Warszawa",
+            kinds=None,
+            since=None,
+            until=None,
+            max_tenders=6,
+            dataset="live",
+            focus=None,
+            order_type=None,
+            db=session,
+        )
+        procurement_ids = {node.id for node in searched.nodes if node.kind == "procurement"}
+        assert len(procurement_ids) <= 6
+        assert all(
+            node.kind == "procurement"
+            or any(
+                (edge.source_id == node.id and edge.target_id in procurement_ids)
+                or (edge.target_id == node.id and edge.source_id in procurement_ids)
+                for edge in searched.edges
+            )
+            for node in searched.nodes
+        )
     engine.dispose()

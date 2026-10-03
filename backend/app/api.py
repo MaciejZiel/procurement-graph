@@ -120,7 +120,9 @@ def graph(
         key=lambda node_id: str(node_by_id[node_id].details.get("published_on") or ""),
         reverse=True,
     )[:max_tenders]
-    visible_ids = set(selected_tenders) | matching_ids
+    visible_ids = set(selected_tenders)
+    if query and not selected_tenders:
+        visible_ids.update(sorted(matching_ids)[:12])
     for edge in all_edges:
         if edge.source_id in selected_tenders or edge.target_id in selected_tenders:
             visible_ids.update((edge.source_id, edge.target_id))

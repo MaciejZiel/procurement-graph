@@ -1,4 +1,4 @@
-"""Small dated BZP snapshot so a fresh installation has real records to explore."""
+"""Dated BZP snapshot so a fresh installation has real records to explore."""
 
 import json
 from pathlib import Path

@@ -6,7 +6,7 @@ Jawny Ślad to aplikacja do odkrywania powiązań między instytucjami, wykonawc
 
 ![Eksplorator powiązań](docs/dashboard.png)
 
-Po pierwszym uruchomieniu domyślnie otwiera się zbiór BZP: do repozytorium dołączono próbkę 36 prawdziwych ogłoszeń warszawskich zamawiających pobranych 3 października 2026 r. Dane fikcyjne są dostępne oddzielnie jako „Scenariusz demo”. Próbka jest migawką, więc do pracy na większym i aktualnym zbiorze użyj importera.
+Po pierwszym uruchomieniu domyślnie otwiera się zbiór BZP: do repozytorium dołączono 1214 prawdziwych ogłoszeń warszawskich zamawiających z okresu 1 września – 3 października 2026 r. Dane fikcyjne są dostępne oddzielnie jako „Scenariusz demo”. Dołączony zbiór jest migawką, więc do pracy na aktualnych danych użyj importera.
 
 ## Co działa
 

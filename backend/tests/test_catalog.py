@@ -13,7 +13,7 @@ def test_sample_catalog_supports_pages_filters_and_focused_graph():
     Base.metadata.create_all(engine)
     with Session(engine) as session:
         seed_demo_data(session)
-        assert seed_bzp_sample(session) == 36
+        assert seed_bzp_sample(session) == 1214
         assert seed_bzp_sample(session) == 0
         page = list_procurements(
             session,
@@ -27,8 +27,8 @@ def test_sample_catalog_supports_pages_filters_and_focused_graph():
             page=1,
             page_size=12,
         )
-        assert page.total == 36
-        assert page.pages == 3
+        assert page.total == 1214
+        assert page.pages == 102
         assert len(page.items) == 12
         assert page.buyers_count > 0
         assert page.suppliers_count > 0

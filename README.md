@@ -13,6 +13,7 @@ Jawny Ślad to projekt portfolio do odkrywania powiązań między instytucjami, 
 - filtry po rodzaju węzła i okresie,
 - profile podmiotów, źródła oraz gotowe ścieżki demonstracyjne,
 - API FastAPI i warstwa PostgreSQL,
+- importer BZP z filtrem lokalizacji i ponawialnym upsertem,
 - kontenerowy start całego środowiska.
 
 ## Uruchomienie
@@ -28,9 +29,17 @@ Frontend będzie dostępny pod `http://localhost:5173`, a dokumentacja API pod `
 
 Można też uruchomić frontend i backend oddzielnie. Instrukcje znajdują się w katalogach `frontend/` i `backend/`.
 
+Po uruchomieniu Compose importer można odpalić na próbce pobranej z BZP:
+
+```bash
+docker compose exec backend python -m app.import_bzp --input /app/data/bzp.json --city Warszawa
+```
+
+Bez `--input` importer pobiera odpowiedź spod `BZP_API_URL` (domyślnie oficjalny endpoint e‑Zamówień). Ponieważ format odpowiedzi dostawcy może się zmieniać, nieznany format jest zapisany lokalnie i odrzucany bez tworzenia relacji. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
+
 ## Dane i metodologia
 
-Docelowym źródłem krajowych ogłoszeń jest bezpłatny webserwis BZP platformy e‑Zamówienia: <https://ezamowienia.gov.pl/mo-client-board/api/notices/>. W pierwszej wersji import należy ograniczyć do ogłoszeń warszawskich instytucji; wykonawcy mogą pochodzić z całej Polski. Dane z TED oraz automatyczne wzbogacanie profili z KRS są planowane jako kolejne źródła.
+Docelowym źródłem krajowych ogłoszeń jest bezpłatny webserwis BZP platformy e‑Zamówienia: <https://ezamowienia.gov.pl/mo-board/api/v1/notice>. W pierwszej wersji import należy ograniczyć do ogłoszeń warszawskich instytucji z ostatnich dwóch lat; wykonawcy mogą pochodzić z całej Polski. Dane z TED oraz automatyczne wzbogacanie profili z KRS są planowane jako kolejne źródła.
 
 Źródło: [materiały integracyjne e‑Zamówień](https://ezamowienia.gov.pl/pl/integracja/). Zakres i format danych należy weryfikować z aktualną instrukcją API przed włączeniem importu produkcyjnego.
 

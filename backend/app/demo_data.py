@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from .models import GraphEdge, GraphNode
 
-
 NODES = [
     {
         "id": "authority-roads",
@@ -94,12 +93,47 @@ NODES = [
 ]
 
 EDGES = [
-    ("roads-published-roadworks", "authority-roads", "tender-roadworks", "ogłosiła", "2025-02-12", None),
-    ("roadworks-awarded-infra", "tender-roadworks", "company-infra", "wybrano wykonawcę", "2025-04-02", 1_240_000),
+    (
+        "roads-published-roadworks",
+        "authority-roads",
+        "tender-roadworks",
+        "ogłosiła",
+        "2025-02-12",
+        None,
+    ),
+    (
+        "roadworks-awarded-infra",
+        "tender-roadworks",
+        "company-infra",
+        "wybrano wykonawcę",
+        "2025-04-02",
+        1_240_000,
+    ),
     ("roads-published-maps", "authority-roads", "tender-maps", "ogłosiła", "2025-05-08", None),
-    ("maps-awarded-maps", "tender-maps", "company-maps", "wybrano wykonawcę", "2025-06-21", 248_000),
-    ("digital-published-portal", "authority-digital", "tender-digital", "ogłosiła", "2026-03-17", None),
-    ("portal-awarded-digital", "tender-digital", "company-digital", "wybrano wykonawcę", "2026-05-30", 410_000),
+    (
+        "maps-awarded-maps",
+        "tender-maps",
+        "company-maps",
+        "wybrano wykonawcę",
+        "2025-06-21",
+        248_000,
+    ),
+    (
+        "digital-published-portal",
+        "authority-digital",
+        "tender-digital",
+        "ogłosiła",
+        "2026-03-17",
+        None,
+    ),
+    (
+        "portal-awarded-digital",
+        "tender-digital",
+        "company-digital",
+        "wybrano wykonawcę",
+        "2026-05-30",
+        410_000,
+    ),
 ]
 
 STORIES = [
@@ -107,7 +141,9 @@ STORIES = [
         "id": "roads-story",
         "eyebrow": "Historia demonstracyjna · fikcyjne dane",
         "title": "Od miejskiej ulicy do wykonawcy",
-        "summary": "Przejdź od instytucji przez ogłoszenie i wynik do firmy wybranej w postępowaniu.",
+        "summary": (
+            "Przejdź od instytucji przez ogłoszenie i wynik do firmy wybranej w postępowaniu."
+        ),
         "node_ids": ["authority-roads", "tender-roadworks", "company-infra"],
         "minutes": 2,
     },

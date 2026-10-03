@@ -20,8 +20,11 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://jawny_slad:local-only-change-me@db:5432/jawny_slad}
       CORS_ORIGINS: http://localhost:5173
+      BZP_API_URL: ${BZP_API_URL:-https://ezamowienia.gov.pl/mo-board/api/v1/notice}
     ports:
       - "8000:8000"
+    volumes:
+      - ./data:/app/data:ro
     depends_on:
       db:
         condition: service_healthy

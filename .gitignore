@@ -6,10 +6,13 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+*.egg-info/
 node_modules/
 dist/
 .vite/
+*.tsbuildinfo
 .DS_Store
 *.log
+data/
 data/*.db
 data/*.sqlite3

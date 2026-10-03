@@ -32,6 +32,7 @@ class EdgeOut(BaseModel):
 class GraphOut(BaseModel):
     nodes: list[NodeOut]
     edges: list[EdgeOut]
+    latest_event_at: date | None
     data_mode: str
     notice: str
 
@@ -52,4 +53,3 @@ class HealthOut(BaseModel):
 
 class SearchOut(BaseModel):
     results: list[NodeOut]
-

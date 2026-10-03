@@ -6,10 +6,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from . import models  # noqa: F401 — register SQLAlchemy models before create_all.
 from .api import router
 from .database import Base, SessionLocal, engine
 from .demo_data import seed_demo_data
-from . import models  # noqa: F401 — register SQLAlchemy models before create_all.
 
 
 @asynccontextmanager
@@ -27,7 +27,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")]
+origins = [
+    origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

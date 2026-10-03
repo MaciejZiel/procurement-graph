@@ -52,35 +52,14 @@ def graph(
     kinds: list[str] | None = Query(default=None),
     since: date | None = None,
     until: date | None = None,
+    max_tenders: int = Query(default=6, ge=1, le=12),
     dataset: str = Query(default="demo", pattern="^(demo|live)$"),
     db: Session = Depends(get_db),
 ) -> GraphOut:
     is_demo = dataset == "demo"
-    nodes = db.scalars(select(GraphNode).where(GraphNode.is_demo.is_(is_demo))).all()
+    all_nodes = db.scalars(select(GraphNode).where(GraphNode.is_demo.is_(is_demo))).all()
     all_edges = db.scalars(select(GraphEdge).where(GraphEdge.is_demo.is_(is_demo))).all()
-    node_by_id = {node.id: node for node in nodes}
-
-    query = q.strip().casefold() if q else ""
-    matching_ids = {
-        node.id
-        for node in nodes
-        if query
-        and query
-        in " ".join((node.label, node.subtitle, node.city, node.kind, str(node.details))).casefold()
-    }
-    if query:
-        related_ids = set(matching_ids)
-        for edge in all_edges:
-            if edge.source_id in matching_ids or edge.target_id in matching_ids:
-                related_ids.update((edge.source_id, edge.target_id))
-        nodes = [node for node in nodes if node.id in related_ids]
-        all_edges = [edge for edge in all_edges if edge.source_id in related_ids and edge.target_id in related_ids]
-
-    if kinds:
-        allowed = set(kinds)
-        nodes = [node for node in nodes if node.kind in allowed]
-        allowed_ids = {node.id for node in nodes}
-        all_edges = [edge for edge in all_edges if edge.source_id in allowed_ids and edge.target_id in allowed_ids]
+    node_by_id = {node.id: node for node in all_nodes}
 
     if since or until:
         all_edges = [
@@ -90,13 +69,72 @@ def graph(
             and (since is None or edge.occurred_at >= since)
             and (until is None or edge.occurred_at <= until)
         ]
-        connected_ids = {edge.source_id for edge in all_edges} | {edge.target_id for edge in all_edges}
-        nodes = [node for node in nodes if node.id in connected_ids]
 
-    edges = [edge for edge in all_edges if edge.source_id in node_by_id and edge.target_id in node_by_id]
+    query = q.strip().casefold() if q else ""
+    matching_ids = {
+        node.id
+        for node in all_nodes
+        if query
+        and query
+        in " ".join((node.label, node.subtitle, node.city, node.kind, str(node.details))).casefold()
+    }
+
+    candidate_tenders = {
+        node_id for node_id in matching_ids if node_by_id[node_id].kind == "procurement"
+    }
+    for edge in all_edges:
+        if edge.source_id in matching_ids and node_by_id[edge.target_id].kind == "procurement":
+            candidate_tenders.add(edge.target_id)
+        if edge.target_id in matching_ids and node_by_id[edge.source_id].kind == "procurement":
+            candidate_tenders.add(edge.source_id)
+    if not query:
+        candidate_tenders = {node.id for node in all_nodes if node.kind == "procurement"}
+
+    def tender_in_period(node_id: str) -> bool:
+        published = node_by_id[node_id].details.get("published_on")
+        try:
+            published_date = date.fromisoformat(str(published)[:10])
+        except (TypeError, ValueError):
+            return since is None and until is None
+        return (since is None or published_date >= since) and (
+            until is None or published_date <= until
+        )
+
+    candidate_tenders = {node_id for node_id in candidate_tenders if tender_in_period(node_id)}
+
+    selected_tenders = sorted(
+        candidate_tenders,
+        key=lambda node_id: str(node_by_id[node_id].details.get("published_on") or ""),
+        reverse=True,
+    )[:max_tenders]
+    visible_ids = set(selected_tenders) | matching_ids
+    for edge in all_edges:
+        if edge.source_id in selected_tenders or edge.target_id in selected_tenders:
+            visible_ids.update((edge.source_id, edge.target_id))
+    nodes = [node for node in all_nodes if node.id in visible_ids]
+    all_edges = [
+        edge
+        for edge in all_edges
+        if edge.source_id in visible_ids and edge.target_id in visible_ids
+    ]
+
+    if kinds:
+        allowed = set(kinds)
+        nodes = [node for node in nodes if node.kind in allowed]
+        allowed_ids = {node.id for node in nodes}
+        all_edges = [
+            edge
+            for edge in all_edges
+            if edge.source_id in allowed_ids and edge.target_id in allowed_ids
+        ]
+
     return GraphOut(
         nodes=[_node_out(node) for node in nodes],
-        edges=[_edge_out(edge) for edge in edges],
+        edges=[_edge_out(edge) for edge in all_edges],
+        latest_event_at=max(
+            (edge.occurred_at for edge in all_edges if edge.occurred_at is not None),
+            default=None,
+        ),
         data_mode=dataset,
         notice=(
             "Fikcyjne dane demonstracyjne. Nie opisują rzeczywistych zamówień ani podmiotów."

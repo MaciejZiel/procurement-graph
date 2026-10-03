@@ -168,7 +168,7 @@ STORIES = [
 
 def seed_demo_data(session: Session) -> None:
     """Insert fictional demo content once, leaving imported records untouched."""
-    if session.scalar(select(GraphNode.id).limit(1)):
+    if session.scalar(select(GraphNode.id).where(GraphNode.is_demo.is_(True)).limit(1)):
         return
 
     session.add_all([GraphNode(**node, is_demo=True) for node in NODES])

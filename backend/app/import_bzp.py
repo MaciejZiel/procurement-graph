@@ -198,6 +198,23 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         or (contractor.get("contractorNationalId") if contractor else None)
         or _first(row, "winnerNip", "contractorNip", "supplierNip", "winnerRegon")
     )
+    suppliers = (
+        [
+            {
+                "name": str(item["contractorName"]).strip(),
+                "tax_id": str(item["contractorNationalId"])
+                if item.get("contractorNationalId")
+                else None,
+                "city": str(item["contractorCity"]).strip() if item.get("contractorCity") else None,
+            }
+            for item in contractors
+            if isinstance(item, dict) and item.get("contractorName")
+        ]
+        if isinstance(contractors, list)
+        else []
+    )
+    if not suppliers and supplier:
+        suppliers = [{"name": supplier, "tax_id": supplier_tax_id, "city": None}]
     source_url = _first(row, "noticeUrl", "sourceUrl", "detailUrl", "url") or _official_notice_url(
         row
     )
@@ -229,9 +246,15 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         "title": title,
         "supplier": supplier,
         "supplier_tax_id": str(supplier_tax_id) if supplier_tax_id else None,
+        "suppliers": suppliers,
         "published": published,
         "amount": amount,
         "source_url": str(source_url) if source_url else None,
+        "order_type": row.get("orderType"),
+        "cpv_code": row.get("cpvCode"),
+        "procedure_result": row.get("procedureResult"),
+        "notice_type": row.get("noticeType"),
+        "tender_id": row.get("tenderId"),
     }
 
 
@@ -280,10 +303,17 @@ def save_notices(
                     "published_on": notice["published"].isoformat()
                     if notice["published"]
                     else None,
-                    "status": "Ogłoszenie BZP",
+                    "status": "Ogłoszenie o wyniku postępowania"
+                    if notice["notice_type"] == "TenderResultNotice"
+                    else "Ogłoszenie BZP",
                     "amount_pln": float(notice["amount"]) if notice["amount"] is not None else None,
                     "offers": row.get("offersCount"),
                     "source": "BZP",
+                    "source_url": source_url,
+                    "order_type": notice["order_type"],
+                    "cpv_code": notice["cpv_code"],
+                    "procedure_result": notice["procedure_result"],
+                    "tender_id": notice["tender_id"],
                 },
                 is_demo=False,
             )
@@ -303,25 +333,33 @@ def save_notices(
             )
         )
 
-        if notice["supplier"]:
-            supplier_id = f"supplier-{_entity_key(notice['supplier'], notice['supplier_tax_id'])}"
+        seen_suppliers: set[str] = set()
+        for supplier_index, supplier in enumerate(notice["suppliers"]):
+            supplier_id = f"supplier-{_entity_key(supplier['name'], supplier['tax_id'])}"
+            if supplier_id in seen_suppliers:
+                continue
+            seen_suppliers.add(supplier_id)
             session.merge(
                 GraphNode(
                     id=supplier_id,
                     kind="company",
-                    label=notice["supplier"][:240],
+                    label=supplier["name"][:240],
                     subtitle="Wykonawca wskazany w danych BZP",
-                    city=city,
-                    details={"source": "BZP", "tax_id": notice["supplier_tax_id"]},
+                    city=supplier["city"] or "Nie podano",
+                    details={"source": "BZP", "tax_id": supplier["tax_id"]},
                     is_demo=False,
                 )
             )
             session.merge(
                 GraphEdge(
-                    id=f"{notice_id}-awarded-to",
+                    id=f"{notice_id}-awarded-to"
+                    if supplier_index == 0
+                    else f"{notice_id}-awarded-to-{supplier_id}",
                     source_id=notice_id,
                     target_id=supplier_id,
-                    relationship_type="wybrano wykonawcę",
+                    relationship_type="wybrano wykonawcę"
+                    if notice["procedure_result"] in (None, "zawarcieUmowy")
+                    else "wskazano wykonawcę",
                     evidence_label=evidence,
                     evidence_url=source_url,
                     occurred_at=occurred_at,

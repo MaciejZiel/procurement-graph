@@ -53,3 +53,34 @@ class HealthOut(BaseModel):
 
 class SearchOut(BaseModel):
     results: list[NodeOut]
+
+
+class EntityRefOut(BaseModel):
+    id: str
+    label: str
+    city: str
+
+
+class ProcurementOut(BaseModel):
+    id: str
+    title: str
+    reference: str | None
+    published_on: date | None
+    buyer: EntityRefOut | None
+    suppliers: list[EntityRefOut]
+    order_type: str | None
+    cpv_code: str | None
+    procedure_result: str | None
+    source_url: str | None
+    is_demo: bool
+
+
+class ProcurementPageOut(BaseModel):
+    items: list[ProcurementOut]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+    buyers_count: int
+    suppliers_count: int
+    latest_event_at: date | None

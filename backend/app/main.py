@@ -10,6 +10,7 @@ from . import models  # noqa: F401 — register SQLAlchemy models before create_
 from .api import router
 from .database import Base, SessionLocal, engine
 from .demo_data import seed_demo_data
+from .sample_data import seed_bzp_sample
 
 
 @asynccontextmanager
@@ -17,6 +18,7 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
         seed_demo_data(session)
+        seed_bzp_sample(session)
     yield
 
 

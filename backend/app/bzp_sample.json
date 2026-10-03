@@ -1,0 +1,1003 @@
+{
+  "source": "https://ezamowienia.gov.pl/mo-board/api/v1/notice",
+  "retrieved_on": "2026-10-03",
+  "city": "Warszawa",
+  "notices": [
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415305/01",
+      "publicationDate": "2026-09-01T06:24:59.2110947Z",
+      "orderObject": "Budowa drogi dla pieszych i rowerów w ramach zadania pn.: „Budowa drogi dla pieszych i rowerów na DK79 na odcinku Świerże Górne - Chinów”.",
+      "cpvCode": "45000000-7 (Roboty budowlane)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "GENERALNA DYREKCJA DRÓG KRAJOWYCH I AUTOSTRAD ODDZIAŁ W WARSZAWIE",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "1132097244",
+      "tenderId": "ocds-148610-a0e3584d-9fa6-4e07-9eba-5829e6991027",
+      "contractors": [
+        {
+          "contractorName": "MG Infrastruktura Marian Wołczyk",
+          "contractorCity": "Rzeszów",
+          "contractorProvince": "PL18",
+          "contractorCountry": "PL",
+          "contractorNationalId": "NIP: 7931456898"
+        }
+      ],
+      "objectId": "08df07f1-bf8f-a3cf-ab56-940001e5a4fb"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415310/01",
+      "publicationDate": "2026-09-01T06:28:09.6694675Z",
+      "orderObject": "Remont poszycia dachowego w budynku mieszkalnym w Bielawach",
+      "cpvCode": "45453000-7 (Roboty remontowe i renowacyjne)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Państwowe Gospodarstwo Wodne Wody Polskie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272825616",
+      "tenderId": "ocds-148610-9b033884-ee96-4fad-b75f-5b5e3254071a",
+      "contractors": [
+        {
+          "contractorName": "SOMAR Marcin Sochaczewski",
+          "contractorCity": "Lisi Ogon",
+          "contractorProvince": "PL04",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5542834081"
+        }
+      ],
+      "objectId": "08df07f2-3114-93ff-ab56-940001e5a504"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415382/01",
+      "publicationDate": "2026-09-01T06:50:21.7358777Z",
+      "orderObject": "Produkcja oraz dostawa broszur, plakatów oraz tablic dla Instytutu Adama Mickiewicza.",
+      "cpvCode": "79810000-5 (Usługi drukowania)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "INSTYTUT ADAMA MICKIEWICZA",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "7011203621",
+      "tenderId": "ocds-148610-01636d9f-4163-4e62-9962-2da3d2d489d4",
+      "contractors": [
+        {
+          "contractorName": "ARGRAF Sp. z o.o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5240004170"
+        }
+      ],
+      "objectId": "08df07f5-4b41-a614-ab56-940001e5a572"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415423/01",
+      "publicationDate": "2026-09-01T07:01:07.0899856Z",
+      "orderObject": "Wymiana obecnych źródeł ciepła na kotły gazowe dwufunkcyjne wraz z budową instalacji c.o., c.w.u., gazowej i spalin w lokalach mieszkalnych w zasobie OR AMW we Wrocławiu (,,Zaprojektuj i wybuduj”).",
+      "cpvCode": "45331110-0 (Instalowanie kotłów),45331100-7 (Instalowanie centralnego ogrzewania),45331000-6 (Instalowanie urządzeń grzewczych, wentylacyjnych i klimatyzacyjnych),71320000-7 (Usługi inżynieryjne w zakresie projektowania),45330000-9 (Roboty instalacyjne wodno-kanalizacyjne i sanitarne),45333000-0 (Roboty instalacyjne gazowe),45332200-5 (Roboty instalacyjne hydrauliczne),45111300-1 (Roboty rozbiórkowe)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Agencja Mienia Wojskowego",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5261038122",
+      "tenderId": "ocds-148610-a00ff447-15ae-4249-a416-b39387d20198",
+      "contractors": [
+        {
+          "contractorName": "RK-TECH Radosław Kwiecień",
+          "contractorCity": "Opole",
+          "contractorProvince": "PL16",
+          "contractorCountry": "PL",
+          "contractorNationalId": "7542938924 (NIP)"
+        }
+      ],
+      "objectId": "08df07f6-cbb6-c965-ab56-940001e5a59f"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415534/01",
+      "publicationDate": "2026-09-01T07:33:02.2351314Z",
+      "orderObject": "MODERNIZACJA ULICY GAZOWEJ NA ODCINKU OD UL. KASPROWICZA DO UL. KRASICKIEGO W DZIELNICY WESOŁA M.ST. WARSZAWY",
+      "cpvCode": "45233120-6 (Roboty w zakresie budowy dróg),45111300-1 (Roboty rozbiórkowe),45111200-0 (Roboty w zakresie przygotowania terenu pod budowę i roboty ziemne)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Miasto Stołeczne Warszawa Dzielnica Wesoła",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5252248481",
+      "tenderId": "ocds-148610-56262b06-e9e8-453a-8892-1212af4b71d2",
+      "contractors": [
+        {
+          "contractorName": "JTM CONSTRUCTION Sp. z o.o.",
+          "contractorCity": "Karczew",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5322085140"
+        }
+      ],
+      "objectId": "08df07fb-41cd-abaa-ab56-940001e5a637"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415563/01",
+      "publicationDate": "2026-09-01T07:40:26.0135156Z",
+      "orderObject": "Modernizacja Szkoły Podstawowej nr 96 przy ul. Sarabandy 16/22 w Warszawie w zakresie dostosowania dla osób z niepełnosprawnościami.",
+      "cpvCode": "45000000-7 (Roboty budowlane),45110000-1 (Roboty w zakresie burzenia i rozbiórki obiektów budowlanych; roboty ziemne),45233200-1 (Roboty w zakresie różnych nawierzchni),45450000-6 (Roboty budowlane wykończeniowe, pozostałe)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "MIASTO STOŁECZNE WARSZAWA DZIELNICA URSYNÓW",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5252248481",
+      "tenderId": "ocds-148610-bb96654c-8d1e-4a41-a86e-8851b5e27b75",
+      "contractors": [
+        {
+          "contractorName": "EWENTO Sp. z o. o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "1231382887"
+        }
+      ],
+      "objectId": "08df07fc-49cb-93e5-ab56-940001e5a65e"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415590/01",
+      "publicationDate": "2026-09-01T07:48:14.9382114Z",
+      "orderObject": "Usługa digitalizacji obiektów muzealnych będących w dyspozycji Zamawiającego w następujących miejscowościach: Płock, Radom, Gliwice, Białystok",
+      "cpvCode": "79961000-8 (Usługi fotograficzne)",
+      "procedureResult": "uniewaznienie",
+      "organizationName": "Muzeum Historii Żydów Polskich POLIN",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5252347728",
+      "tenderId": "ocds-148610-9ec26daa-692e-42f4-9c12-b71341a99f17",
+      "contractors": [
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        }
+      ],
+      "objectId": "08df07fd-621e-3303-ab56-940001e5a67f"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415635/01",
+      "publicationDate": "2026-09-01T07:58:30.8429892Z",
+      "orderObject": "Zakup usługi wsparcia producenta dla macierzy Dell EMC Unity.",
+      "cpvCode": "72611000-6 (Usługi w zakresie wsparcia technicznego)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Ministerstwo Klimatu i Środowiska",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5261647453",
+      "tenderId": "ocds-148610-ecd04995-dde0-44a4-9b5c-7c15fd223e25",
+      "contractors": [
+        {
+          "contractorName": "ADT GROUP Sp. z o.o",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "951-22-94-529"
+        }
+      ],
+      "objectId": "08df07fe-d059-bfb5-ab56-940001e5a6b5"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415655/01",
+      "publicationDate": "2026-09-01T08:03:37.116848Z",
+      "orderObject": "Dostawa laptopów, tabletów oraz akcesoriów komputerowych na potrzeby Instytutu Badawczego IDEAS",
+      "cpvCode": "30213100-6 (Komputery przenośne),30213200-7 (Komputer tablet),30237410-6 (Myszka komputerowa),30237460-1 (Klawiatury komputerowe)",
+      "procedureResult": "uniewaznienie;uniewaznienie",
+      "organizationName": "Instytut Badawczy IDEAS",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5253042617",
+      "tenderId": "ocds-148610-96f4e04a-a2b7-4a30-ad00-4fd9c9f41c1a",
+      "contractors": [
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        }
+      ],
+      "objectId": "08df07ff-874f-5080-ab56-940001e5a6cd"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415713/01",
+      "publicationDate": "2026-09-01T08:28:21.5439243Z",
+      "orderObject": "Utylizacja składników majątkowych",
+      "cpvCode": "90513000-6 (Usługi obróbki i usuwania odpadów, które nie są niebezpieczne),90512000-9 (Usługi transportu odpadów),90523000-9 (Usługi usuwania odpadów toksycznych, z wyjątkiem odpadów radioaktywnych i zanieczyszczonej gleby)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Izba Administracji Skarbowej w Warszawie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5251007278",
+      "tenderId": "ocds-148610-8a7f89ee-fa7c-4c4e-90b9-3513ac4066c1",
+      "contractors": [
+        {
+          "contractorName": "\"CHIMIREC POLSKA\" Sp. z o. o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "7962197966"
+        }
+      ],
+      "objectId": "08df0802-fbb2-d23f-ab56-940001e5a722"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415831/01",
+      "publicationDate": "2026-09-01T08:57:28.1579436Z",
+      "orderObject": "Zakup i dostawa sprzętu komputerowego, oprogramowania oraz sprzętu peryferyjnego do IGiPZ PAN w Warszawie",
+      "cpvCode": "30200000-1 (Urządzenia komputerowe),30213200-7 (Komputer tablet),37453300-1 (Dyski),30214000-2 (Stacje robocze),30231300-0 (Monitory ekranowe),48000000-8 (Pakiety oprogramowania i systemy informatyczne),30232110-8 (Drukarki laserowe),32250000-0 (Telefony komórkowe),30234000-8 (Nośniki do przechowywania),30213100-6 (Komputery przenośne)",
+      "procedureResult": ";uniewaznienie;uniewaznienie;uniewaznienie;uniewaznienie;uniewaznienie;uniewaznienie;uniewaznienie;;uniewaznienie;uniewaznienie;uniewaznienie;uniewaznienie;;uniewaznienie;;uniewaznienie;;uniewaznienie;;uniewaznienie;uniewaznienie",
+      "organizationName": "Instytut Geografii i Przestrzennego Zagospodarowania im.S.Leszczyckiego PAN",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5250012188",
+      "tenderId": "ocds-148610-031dcd7c-8307-4f27-8b83-742f735022af",
+      "contractors": [
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        },
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        }
+      ],
+      "objectId": "08df0807-0cca-0033-ab56-940001e5a7c3"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415838/01",
+      "publicationDate": "2026-09-01T08:59:43.0077831Z",
+      "orderObject": "Wykonanie robót budowlanych dla zadania: Wał przeciwpowodziowy Zastań.",
+      "cpvCode": "45246000-3 (Roboty w zakresie regulacji rzek i kontroli przeciwpowodziowej)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Państwowe Gospodarstwo Wodne Wody Polskie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272825616",
+      "tenderId": "ocds-148610-fa330d85-831f-46b3-adaa-9b8e63020c57",
+      "contractors": [
+        {
+          "contractorName": "KONSORCJUM : Przedsiębiorstwo Wielobranżowe FRANSŁAW Piotr Kalemba Zdrój 6, 62-065 Grodzisk Wlkp. - LIDER",
+          "contractorCity": "Grodzisk Wielkopolski",
+          "contractorProvince": null,
+          "contractorCountry": "PL",
+          "contractorNationalId": "7880011197"
+        }
+      ],
+      "objectId": "08df0807-5d23-a4a8-ab56-940001e5a7d1"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415874/01",
+      "publicationDate": "2026-09-01T09:11:14.5095057Z",
+      "orderObject": "Dostawa urządzeń suszarniczych dla jednostek organizacyjnych \nw Państwowym Gospodarstwie Wodnym Wody Polskie – 2 części",
+      "cpvCode": "39713200-5 (Maszyny piorące i suszarki do ubrań)",
+      "procedureResult": "zawarcieUmowy;zawarcieUmowy",
+      "organizationName": "Państwowe Gospodarstwo Wodne Wody Polskie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272825616",
+      "tenderId": "ocds-148610-55d306f1-43d6-47ed-afdd-eed43bbbb772",
+      "contractors": [
+        {
+          "contractorName": "Arpapol 2 Sp. z o.o.",
+          "contractorCity": "Krasnystaw",
+          "contractorProvince": "PL06",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5641796277"
+        },
+        {
+          "contractorName": "Arpapol 2 Sp. z o.o.",
+          "contractorCity": "Krasnystaw",
+          "contractorProvince": "PL06",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5641796277"
+        }
+      ],
+      "objectId": "08df0808-f95d-c467-ab56-940001e5a80b"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415898/01",
+      "publicationDate": "2026-09-01T09:16:28.6368385Z",
+      "orderObject": "Wykonanie usług nadzoru Inwestorskiego dla zadania: Wał przeciwpowodziowy Zastań",
+      "cpvCode": "71520000-9 (Usługi nadzoru budowlanego)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Państwowe Gospodarstwo Wodne Wody Polskie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272825616",
+      "tenderId": "ocds-148610-e3ce4e22-da04-48de-b137-e3cb06978d60",
+      "contractors": [
+        {
+          "contractorName": "LAWOKAST Consulting Jerzy Kozakowski",
+          "contractorCity": "Bobrowice",
+          "contractorProvince": null,
+          "contractorCountry": "PL",
+          "contractorNationalId": "9261070613"
+        }
+      ],
+      "objectId": "08df0809-b4d3-346a-ab56-940001e5a82d"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00415948/01",
+      "publicationDate": "2026-09-01T09:28:52.0668204Z",
+      "orderObject": "Remont lokali mieszkalnych, stanowiących własność m.st. Warszawy, administrowanych przez ZGN Wola m.st. Warszawy na terenie TZOM Nowolipki (4 lokale).",
+      "cpvCode": "45000000-7 (Roboty budowlane),45422100-2 (Stolarka drewniana),45262321-7 (Wyrównywanie podłóg),45431100-8 (Kładzenie terakoty),45432113-9 (Kładzenie parkietu),45442100-8 (Roboty malarskie),45400000-1 (Roboty wykończeniowe w zakresie obiektów budowlanych),45420000-7 (Roboty w zakresie zakładania stolarki budowlanej oraz roboty ciesielskie),45111300-1 (Roboty rozbiórkowe),45441000-0 (Roboty szklarskie),45450000-6 (Roboty budowlane wykończeniowe, pozostałe)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "\"ZAKŁAD GOSPODAROWANIA NIERUCHOMOŚCIAMI W DZIELNICY WOLA M.ST. WARSZAWY\"",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272457153",
+      "tenderId": "ocds-148610-e44eb1ec-b6e6-4df8-a8a7-c90f6a2def31",
+      "contractors": [
+        {
+          "contractorName": "Przedsiębiorstwo budowlane \"KORSBUD\" Sp. z o.o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": null,
+          "contractorCountry": "PL",
+          "contractorNationalId": "NIP: 5272424225"
+        }
+      ],
+      "objectId": "08df080b-6fa7-7612-ab56-940001e5a868"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416001/01",
+      "publicationDate": "2026-09-01T09:43:31.1232313Z",
+      "orderObject": "Remont budynku administracyjno-biurowego RZGW Bydgoszcz - ponowienie",
+      "cpvCode": "45453000-7 (Roboty remontowe i renowacyjne),45432100-5 (Kładzenie i wykładanie podłóg),45432111-5 (Kładzenie wykładzin elastycznych),45442110-1 (Malowanie budynków),45300000-0 (Roboty instalacyjne w budynkach),45330000-9 (Roboty instalacyjne wodno-kanalizacyjne i sanitarne),45331000-6 (Instalowanie urządzeń grzewczych, wentylacyjnych i klimatyzacyjnych),45331200-8 (Instalowanie urządzeń wentylacyjnych i klimatyzacyjnych),45331210-1 (Instalowanie wentylacji),45331220-4 (Instalowanie urządzeń klimatyzacyjnych),45332000-3 (Roboty instalacyjne wodne i kanalizacyjne),45332200-5 (Roboty instalacyjne hydrauliczne),45332300-6 (Roboty instalacyjne kanalizacyjne),45332400-7 (Roboty instalacyjne w zakresie urządzeń sanitarnych),45400000-1 (Roboty wykończeniowe w zakresie obiektów budowlanych),45450000-6 (Roboty budowlane wykończeniowe, pozostałe),45310000-3 (Roboty instalacyjne elektryczne),45000000-7 (Roboty budowlane),45111300-1 (Roboty rozbiórkowe),45311000-0 (Roboty w zakresie okablowania oraz instalacji elektrycznych),45311100-1 (Roboty w zakresie okablowania elektrycznego),45311200-2 (Roboty w zakresie instalacji elektrycznych),45315300-1 (Instalacje zasilania elektrycznego),45315600-4 (Instalacje niskiego napięcia),45315700-5 (Instalowanie stacji rozdzielczych),45316000-5 (Instalowanie systemów oświetleniowych i sygnalizacyjnych),45316100-6 (Instalowanie urządzeń oświetlenia zewnętrznego),45314300-4 (Instalowanie infrastruktury okablowania),45314310-7 (Układanie kabli),45314320-0 (Instalowanie okablowania komputerowego),45314000-1 (Instalowanie urządzeń telekomunikacyjnych),45312310-3 (Ochrona odgromowa),45312311-0 (Montaż instalacji piorunochronnej),45312100-8 (Instalowanie przeciwpożarowych systemów alarmowych),45312000-7 (Instalowanie systemów alarmowych i anten),45312200-9 (Instalowanie przeciwwłamaniowych systemów alarmowych),42961100-1 (System kontroli dostępu),51314000-6 (Usługi instalowania urządzeń wideo),32323500-8 (Urządzenia do nadzoru wideo),35125300-2 (Kamery bezpieczeństwa),35120000-1 (Systemy i urządzenia nadzoru i bezpieczeństwa),35121700-5 (Systemy alarmowe),32552600-3 (Domofony),51340000-7 (Usługi instalowania urządzeń telefonicznych),32321200-1 (Urządzenia audiowizualne),32324600-6 (Telewizory cyfrowe),38652120-7 (Projektory wideo)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Państwowe Gospodarstwo Wodne Wody Polskie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272825616",
+      "tenderId": "ocds-148610-bdd098ed-4a80-4abf-8d79-52175b9adbdd",
+      "contractors": [
+        {
+          "contractorName": "BYDGOSTA Sp. z o.o.",
+          "contractorCity": "Bydgoszcz",
+          "contractorProvince": "PL04",
+          "contractorCountry": "PL",
+          "contractorNationalId": "090014963"
+        }
+      ],
+      "objectId": "08df080d-7bab-ffb1-ab56-940001e5a8ac"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416074/01",
+      "publicationDate": "2026-09-01T10:02:51.7421419Z",
+      "orderObject": "ŚWIADCZENIE USŁUG Z ZAKRESU MEDYCYNY PRACY",
+      "cpvCode": "85121000-3 (Usługi medyczne),85147000-1 (Usługi zdrowotne świadczone dla firm)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Centrum Unijnych Projektów Transportowych",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "7010071270",
+      "tenderId": "ocds-148610-d4ad7efd-a031-4eb5-9b87-687dbb030d06",
+      "contractors": [
+        {
+          "contractorName": "CenterMed Warszawa Sp. z o.o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "7010318167"
+        }
+      ],
+      "objectId": "08df0810-304a-d538-ab56-9400018aa724"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416077/01",
+      "publicationDate": "2026-09-01T10:03:47.9153247Z",
+      "orderObject": "Wykonanie usług geodezyjnych",
+      "cpvCode": "71355000-1 (Usługi pomiarowe),71222100-1 (Usługi kartograficzne w zakresie obszarów miejskich),71222200-2 (Usługi kartograficzne w zakresie obszarów wiejskich),71354000-4 (Usługi sporządzania map)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Agencja Mienia Wojskowego",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5261038122",
+      "tenderId": "ocds-148610-3d72d8da-8888-48df-97e2-44acaaed05c3",
+      "contractors": [
+        {
+          "contractorName": "GEOPROFIL Sp. z o.o.",
+          "contractorCity": "Poznań",
+          "contractorProvince": "PL30",
+          "contractorCountry": "PL",
+          "contractorNationalId": "NIP: PL 7831728268"
+        }
+      ],
+      "objectId": "08df0810-53d3-e4b4-ab56-9400018aa72a"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416187/01",
+      "publicationDate": "2026-09-01T10:28:46.3230225Z",
+      "orderObject": "Dostawa odczynników do Biologii Komórkowej",
+      "cpvCode": "33696500-0 (Odczynniki laboratoryjne)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Instytut Medycyny Doświadczalnej i Klinicznej im. Mirosława Mossakowskiego PAN",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5250008169",
+      "tenderId": "ocds-148610-534ce596-eb46-45e4-9c75-9a3a1911eda4",
+      "contractors": [
+        {
+          "contractorName": "Merck Life Science Sp. z o.o.",
+          "contractorCity": "Poznań",
+          "contractorProvince": "PL30",
+          "contractorCountry": "PL",
+          "contractorNationalId": "NIP 778-10-02-137"
+        }
+      ],
+      "objectId": "08df0813-ce1b-011a-ab56-9400018aa7aa"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416256/01",
+      "publicationDate": "2026-09-01T10:41:28.2274434Z",
+      "orderObject": "Zakup podręczników do nauki języka angielskiego i języka polskiego, dla\nuczestników kursów dokształcających organizowanych w SJO PW, wraz z dostawą",
+      "cpvCode": "22000000-0 (Druki i produkty podobne),22110000-4 (Drukowane książki)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "POLITECHNIKA WARSZAWSKA",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5250005834",
+      "tenderId": "ocds-148610-5eaaaf9a-1bb9-4feb-abbc-c664936179be",
+      "contractors": [
+        {
+          "contractorName": "POLANGLO sp. z o.o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": null,
+          "contractorCountry": "PL",
+          "contractorNationalId": "5272076913"
+        }
+      ],
+      "objectId": "08df0815-9420-da4e-ab56-9400018aa7f9"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416338/01",
+      "publicationDate": "2026-09-01T10:57:06.6202714Z",
+      "orderObject": "Dowóz dzieci niepełnosprawnych do placówek oświatowych w roku szkolnym 2026/2027",
+      "cpvCode": "60130000-8 (Usługi w zakresie specjalistycznego transportu drogowego osób)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "MIASTO STOŁECZNE WARSZAWA",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5252248481",
+      "tenderId": "ocds-148610-4acca70c-8883-44dc-aab3-00f315f15d82",
+      "contractors": [
+        {
+          "contractorName": "SABAK KRZYSZTOF SABAK",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "1130019300"
+        }
+      ],
+      "objectId": "08df0817-c37f-7b54-ab56-9400018aa85c"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416340/01",
+      "publicationDate": "2026-09-01T10:57:09.1108926Z",
+      "orderObject": "Remont lokali mieszkalnych, stanowiących własność m.st. Warszawy, administrowanych przez ZGN Wola m.st. Warszawy na terenie TZOM Nowolipki (6 lokali)",
+      "cpvCode": "45000000-7 (Roboty budowlane),45422100-2 (Stolarka drewniana),45262321-7 (Wyrównywanie podłóg),45431100-8 (Kładzenie terakoty),45432113-9 (Kładzenie parkietu),45442100-8 (Roboty malarskie),45400000-1 (Roboty wykończeniowe w zakresie obiektów budowlanych),45420000-7 (Roboty w zakresie zakładania stolarki budowlanej oraz roboty ciesielskie),45111300-1 (Roboty rozbiórkowe),45441000-0 (Roboty szklarskie),45450000-6 (Roboty budowlane wykończeniowe, pozostałe)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "\"ZAKŁAD GOSPODAROWANIA NIERUCHOMOŚCIAMI W DZIELNICY WOLA M.ST. WARSZAWY\"",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272457153",
+      "tenderId": "ocds-148610-9a7eec24-d117-4497-85ef-c7734f8f74b9",
+      "contractors": [
+        {
+          "contractorName": "ELTBUD Władysław Wyszyński",
+          "contractorCity": "Wiskitki",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "NIP 8381258017"
+        }
+      ],
+      "objectId": "08df0817-c4f0-985d-ab56-9400018aa85e"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416354/01",
+      "publicationDate": "2026-09-01T10:59:45.460611Z",
+      "orderObject": "remont pomieszczeń sanitarnych w klatce trzeciej w budynku mieszkalnym przy ul. Karolkowej 64 w Warszawie",
+      "cpvCode": "45000000-7 (Roboty budowlane)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "\"ZAKŁAD GOSPODAROWANIA NIERUCHOMOŚCIAMI W DZIELNICY WOLA M.ST. WARSZAWY\"",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272457153",
+      "tenderId": "ocds-148610-249ccce4-f910-4e81-966c-cf3769f63228",
+      "contractors": [
+        {
+          "contractorName": "LION Sp. z o.o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5214115766"
+        }
+      ],
+      "objectId": "08df0818-2220-c14f-ab56-9400018aa86e"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416368/01",
+      "publicationDate": "2026-09-01T11:02:29.421817Z",
+      "orderObject": "Dostawa, transport, rozładunek, montaż, wyk. przyłącza i przyłączenie, podł. instalacji, 31 kpl. kontenerów systemowych (28 kpl. mieszk.- biur. wyposażonych w jednostki klimatyzacyjne i 3 kon. mag.",
+      "cpvCode": "44211100-3 (Budynki modułowe i przenośne),45223800-4 (Montaż i wznoszenie gotowych konstrukcji),98390000-3 (Inne usługi)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Stołeczny Zarząd Infrastruktury",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5262200493",
+      "tenderId": "ocds-148610-301f290a-229c-4171-924b-fc57dd44ca85",
+      "contractors": [
+        {
+          "contractorName": "KTM Budownictwo Sp. z o.o.",
+          "contractorCity": "Poznań",
+          "contractorProvince": "PL30",
+          "contractorCountry": "PL",
+          "contractorNationalId": "7831701252"
+        }
+      ],
+      "objectId": "08df0818-8448-efd4-ab56-9400018aa87c"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416474/01",
+      "publicationDate": "2026-09-01T11:26:56.6212181Z",
+      "orderObject": "Kompleksowa organizacja konferencji z okazji Europejskiego Tygodnia Mobilności",
+      "cpvCode": "79952000-2 (Usługi w zakresie organizacji imprez)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Miasto Stołeczne Warszawa",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5252248481",
+      "tenderId": "ocds-148610-45aa80b4-4f6a-491f-a8f0-d9d98b2e1014",
+      "contractors": [
+        {
+          "contractorName": "EVENT STUDIO S.C.",
+          "contractorCity": "Lublin",
+          "contractorProvince": "PL06",
+          "contractorCountry": "PL",
+          "contractorNationalId": "9462571687"
+        }
+      ],
+      "objectId": "08df081b-ee60-5852-ab56-9400018aa909"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416536/01",
+      "publicationDate": "2026-09-01T11:41:24.115304Z",
+      "orderObject": "Odbudowa koryta rzeki Prudnik – cz. 1",
+      "cpvCode": "45246400-7 (Roboty w zakresie ochrony przeciwpowodziowej),45100000-8 (Przygotowanie terenu pod budowę),45200000-9 (Roboty budowlane w zakresie wznoszenia kompletnych obiektów budowlanych lub ich części oraz roboty w zakresie inżynierii lądowej i wodnej),71320000-7 (Usługi inżynieryjne w zakresie projektowania),45240000-1 (Budowa obiektów inżynierii wodnej),71322000-1 (Usługi inżynierii projektowej w zakresie inżynierii lądowej i wodnej),45111000-8 (Roboty w zakresie burzenia, roboty ziemne),45246000-3 (Roboty w zakresie regulacji rzek i kontroli przeciwpowodziowej)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Państwowe Gospodarstwo Wodne Wody Polskie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272825616",
+      "tenderId": "ocds-148610-4b6a92cc-5e00-4e07-bd9f-413dddaf4aa3",
+      "contractors": [
+        {
+          "contractorName": "Zakład Usług Hydrotechniczno-Melioracyjnych Wojciech Ferenc",
+          "contractorCity": "Ozimek",
+          "contractorProvince": "PL16",
+          "contractorCountry": "PL",
+          "contractorNationalId": "7541956021"
+        }
+      ],
+      "objectId": "08df081d-f39c-3fe3-ab56-9400018aa95b"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416604/01",
+      "publicationDate": "2026-09-01T11:55:46.0142187Z",
+      "orderObject": "Zakup sprzętu komputerowego  z oprogramowaniem",
+      "cpvCode": "30200000-1 (Urządzenia komputerowe),30213100-6 (Komputery przenośne),30231300-0 (Monitory ekranowe),30230000-0 (Sprzęt związany z komputerami),48900000-7 (Różne pakiety oprogramowania i systemy komputerowe)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "SAMODZIELNY WOJEWÓDZKI ZESPÓŁ PUBLICZNYCH ZAKŁADÓW PSYCHIATRYCZNEJ OPIEKI ZDROWOTNEJ W WARSZAWIE",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5261744274",
+      "tenderId": "ocds-148610-d42783d8-063a-4323-9dd7-890aed2061b1",
+      "contractors": [
+        {
+          "contractorName": "EMMA-PC Technologie Komputerowe K. Maciejewski Spółka Jawna",
+          "contractorCity": "Otwock",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5210122491"
+        }
+      ],
+      "objectId": "08df081f-f52c-d0bb-ab56-9400018aa9b9"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416707/01",
+      "publicationDate": "2026-09-01T12:19:01.0145199Z",
+      "orderObject": "Sukcesywna dostawa materiałów i akcesoriów laboratoryjnych dla Polskiego Laboratorium Antydopingowego.",
+      "cpvCode": "38000000-5 (Sprzęt laboratoryjny, optyczny i precyzyjny (z wyjątkiem szklanego)),33793000-5 (Laboratoryjne wyroby szklane),33192500-7 (Probówki)",
+      "procedureResult": "zawarcieUmowy;zawarcieUmowy",
+      "organizationName": "POLSKIE LABORATORIUM ANTYDOPINGOWE",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "1182186754",
+      "tenderId": "ocds-148610-f5d09e3c-de7c-45be-beef-d7d6f07faff9",
+      "contractors": [
+        {
+          "contractorName": "CHEMILAB - Bożena Gładysz - Sprzedaż Odczynników i Produktów Chemicznych",
+          "contractorCity": "Tarnobrzeg",
+          "contractorProvince": "PL18",
+          "contractorCountry": "PL",
+          "contractorNationalId": "8670000383"
+        },
+        {
+          "contractorName": "WATERS - Spółka z ograniczoną odpowiedzialnością",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "1180063243"
+        }
+      ],
+      "objectId": "08df0823-34a9-313a-ab56-9400018aaa4b"
+    },
+    {
+      "orderType": "Delivery",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416728/01",
+      "publicationDate": "2026-09-01T12:24:19.6833689Z",
+      "orderObject": "Dostawa produktów leczniczych: Awibaktam + Ceftazydym, Ceftarolina, Tygecyklina.",
+      "cpvCode": "33600000-6 (Produkty farmaceutyczne)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Instytut Gruźlicy i Chorób Płuc",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5250008838",
+      "tenderId": "ocds-148610-61db9d9a-2389-47c3-b470-f9847f9fc1f0",
+      "contractors": [
+        {
+          "contractorName": "PROFARM PS Sp. z o.o.",
+          "contractorCity": "Stara Iwiczna",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5220103756"
+        }
+      ],
+      "objectId": "08df0823-f29a-1901-ab56-9400018aaa67"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416742/01",
+      "publicationDate": "2026-09-01T12:28:17.967841Z",
+      "orderObject": "UPGRADE AKTYWNEJ LICENCJI ANSYS STK PRO DO LICENCJI STK PREMIUM SPACE",
+      "cpvCode": "48213000-4 (Pakiety oprogramowania do rozszerzania systemu operacyjnego)",
+      "procedureResult": "uniewaznienie",
+      "organizationName": "Wojskowa Akademia Techniczna",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5270206300",
+      "tenderId": "ocds-148610-ac4d5b04-cd6d-40ad-bd0a-bf556458ec00",
+      "contractors": [
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        }
+      ],
+      "objectId": "08df0824-80a1-39b9-ab56-9400018aaa77"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416756/01",
+      "publicationDate": "2026-09-01T12:31:55.7517773Z",
+      "orderObject": "Wynajem pojazdu do przewozu studentów  wraz z kierowcą",
+      "cpvCode": "60170000-0 (Wynajem pojazdów przeznaczonych do transportu osób wraz z kierowcą)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "POLITECHNIKA WARSZAWSKA",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5250005834",
+      "tenderId": "ocds-148610-b41c15e5-6fed-483b-b736-c5bf722f683c",
+      "contractors": [
+        {
+          "contractorName": "Usługi Transportowe Zofia Wisińska",
+          "contractorCity": "Kienkówka nr 66",
+          "contractorProvince": "PL06",
+          "contractorCountry": "PL",
+          "contractorNationalId": "030936818"
+        }
+      ],
+      "objectId": "08df0825-0270-3a33-ab56-9400018aaa8a"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416901/01",
+      "publicationDate": "2026-09-01T13:07:05.1426929Z",
+      "orderObject": "Wyk. zam. podob. do 198/MZDW/04/2026/R - Remont istniejących ciągów pieszych, pieszo-rowerowych i rowerowych zlok. w pasie dróg adm. przez MZDW RD Gostynin-Płock OD Sanniki – post.153/26",
+      "cpvCode": "45233161-5 (Roboty budowlane w zakresie ścieżek pieszych),45233162-2 (Roboty budowlane w zakresie ścieżek rowerowych),45233222-1 (Roboty budowlane w zakresie układania chodników i asfaltowania)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "MAZOWIECKI ZARZĄD DRÓG WOJEWÓDZKICH W WARSZAWIE",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5270206346",
+      "tenderId": "ocds-148610-e5d3e21a-0c10-4add-b4b5-d57992114f98",
+      "contractors": [
+        {
+          "contractorName": "Tymczasowe Drogi Modułowe Sp. z o.o.",
+          "contractorCity": "Łuków",
+          "contractorProvince": "PL06",
+          "contractorCountry": "PL",
+          "contractorNationalId": "8252173678"
+        }
+      ],
+      "objectId": "08df0829-ebbb-d6d0-ab56-9400018aab3f"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416931/01",
+      "publicationDate": "2026-09-01T13:20:20.6444334Z",
+      "orderObject": "„Odbudowa umocnień z koszy siatkowo-kamiennych na prawym brzegu cieku Lesznianka  w km 2+590 - 2+630 w m. Leszna Górna, gm. Goleszów”",
+      "cpvCode": "45246400-7 (Roboty w zakresie ochrony przeciwpowodziowej)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Państwowe Gospodarstwo Wodne Wody Polskie",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "5272825616",
+      "tenderId": "ocds-148610-edbf7226-520f-414e-bb8b-3da3f7cf5a19",
+      "contractors": [
+        {
+          "contractorName": "ŚLEPECKI JERZY Zakład Robót Inżynieryjnych \"EKOINŻ\"",
+          "contractorCity": "Zarzecze",
+          "contractorProvince": "PL18",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5530015696"
+        }
+      ],
+      "objectId": "08df082b-c5f1-f35e-ab56-9400018aab6e"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416970/01",
+      "publicationDate": "2026-09-01T13:36:21.3645367Z",
+      "orderObject": "Obsługa organizacyjna wizytacji w ramach ewaluacji szkół doktorskich",
+      "cpvCode": "79951000-5 (Usługi w zakresie organizowania seminariów),55100000-1 (Usługi hotelarskie),55300000-3 (Usługi restauracyjne i dotyczące podawania posiłków),60000000-8 (Usługi transportowe (z wyłączeniem transportu odpadów)),55110000-4 (Hotelarskie usługi noclegowe)",
+      "procedureResult": "uniewaznienie",
+      "organizationName": "Ministerstwo Nauki i Szkolnictwa Wyższego",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "7011181865",
+      "tenderId": "ocds-148610-66302703-9858-43b4-a5cd-74a5feebd50c",
+      "contractors": [
+        {
+          "contractorName": null,
+          "contractorCity": null,
+          "contractorProvince": null,
+          "contractorCountry": null,
+          "contractorNationalId": null
+        }
+      ],
+      "objectId": "08df082e-0286-0315-ab56-9400018aabaa"
+    },
+    {
+      "orderType": "Services",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416992/01",
+      "publicationDate": "2026-09-01T13:53:43.3855623Z",
+      "orderObject": "Usługa polegająca na utworzeniu i prowadzeniu bezpłatnego punktu pomocy psychologicznej i pedagogicznej - projekt realizowany w ramach zwycięskiego projektu w Budżecie Obywatelskim na rok 2026",
+      "cpvCode": "85121270-6 (Usługi psychiatryczne lub psychologiczne),85311300-5 (Usługi opieki społecznej dla dzieci i młodzieży)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Miasto Stołeczne Warszawa - Dzielnica Bielany",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "01525964000041",
+      "tenderId": "ocds-148610-f1301933-a3a0-42c8-b8c4-e70b449903b7",
+      "contractors": [
+        {
+          "contractorName": "STOWARZYSZENIE PRZYMIERZE RODZIN",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "5261649699"
+        }
+      ],
+      "objectId": "08df0830-6f9e-0fa1-ab56-9400018aabd6"
+    },
+    {
+      "orderType": "Works",
+      "noticeType": "TenderResultNotice",
+      "noticeNumber": "2026/BZP 00416994/01",
+      "publicationDate": "2026-09-01T13:56:13.4375187Z",
+      "orderObject": "Roboty budowlano-montażowe na obiekcie - adaptacja przestrzeni na pomieszcz. biurowe w Sali Obsługi Mieszkańców w budynku Urzędu m.st. W-wy dla Dzielnicy Bielany przy ul. S. Żeromskiego 29 w Warszawie",
+      "cpvCode": "45000000-7 (Roboty budowlane),45111300-1 (Roboty rozbiórkowe),45310000-3 (Roboty instalacyjne elektryczne),45410000-4 (Tynkowanie),45430000-0 (Pokrywanie podłóg i ścian),45442100-8 (Roboty malarskie),45453000-7 (Roboty remontowe i renowacyjne),45421100-5 (Instalowanie drzwi i okien, i podobnych elementów)",
+      "procedureResult": "zawarcieUmowy",
+      "organizationName": "Miasto Stołeczne Warszawa - Dzielnica Bielany",
+      "organizationCity": "Warszawa",
+      "organizationNationalId": "01525964000041",
+      "tenderId": "ocds-148610-35221cde-b2ab-4286-947f-5c3a4c829a5b",
+      "contractors": [
+        {
+          "contractorName": "HELSEN Sp. z o.o.",
+          "contractorCity": "Warszawa",
+          "contractorProvince": "PL14",
+          "contractorCountry": "PL",
+          "contractorNationalId": "1182201465"
+        }
+      ],
+      "objectId": "08df0830-c90f-c44a-ab56-9400018aabd8"
+    }
+  ]
+}

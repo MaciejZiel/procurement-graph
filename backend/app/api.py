@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
+from .catalog import list_procurements
 from .database import get_db
 from .demo_data import STORIES
 from .models import GraphEdge, GraphNode
-from .schemas import EdgeOut, GraphOut, HealthOut, NodeOut, SearchOut, StoryOut
+from .schemas import EdgeOut, GraphOut, HealthOut, NodeOut, ProcurementPageOut, SearchOut, StoryOut
 
 router = APIRouter(prefix="/api")
 
@@ -54,12 +55,16 @@ def graph(
     until: date | None = None,
     max_tenders: int = Query(default=6, ge=1, le=12),
     dataset: str = Query(default="demo", pattern="^(demo|live)$"),
+    focus: str | None = None,
+    order_type: str | None = None,
     db: Session = Depends(get_db),
 ) -> GraphOut:
     is_demo = dataset == "demo"
     all_nodes = db.scalars(select(GraphNode).where(GraphNode.is_demo.is_(is_demo))).all()
     all_edges = db.scalars(select(GraphEdge).where(GraphEdge.is_demo.is_(is_demo))).all()
     node_by_id = {node.id: node for node in all_nodes}
+    if focus and (focus not in node_by_id or node_by_id[focus].kind != "procurement"):
+        raise HTTPException(status_code=404, detail="Nie znaleziono postępowania")
 
     if since or until:
         all_edges = [
@@ -89,6 +94,9 @@ def graph(
             candidate_tenders.add(edge.source_id)
     if not query:
         candidate_tenders = {node.id for node in all_nodes if node.kind == "procurement"}
+    if focus:
+        candidate_tenders = {focus}
+        matching_ids = set()
 
     def tender_in_period(node_id: str) -> bool:
         published = node_by_id[node_id].details.get("published_on")
@@ -100,7 +108,12 @@ def graph(
             until is None or published_date <= until
         )
 
-    candidate_tenders = {node_id for node_id in candidate_tenders if tender_in_period(node_id)}
+    candidate_tenders = {
+        node_id
+        for node_id in candidate_tenders
+        if tender_in_period(node_id)
+        and (not order_type or node_by_id[node_id].details.get("order_type") == order_type)
+    }
 
     selected_tenders = sorted(
         candidate_tenders,
@@ -141,6 +154,33 @@ def graph(
             if is_demo
             else "Dane źródłowe. Każda relacja wymaga weryfikacji w podanym dokumencie."
         ),
+    )
+
+
+@router.get("/procurements", response_model=ProcurementPageOut, tags=["procurements"])
+def procurements(
+    q: str | None = Query(default=None, max_length=160),
+    dataset: str = Query(default="live", pattern="^(demo|live)$"),
+    since: date | None = None,
+    until: date | None = None,
+    order_type: str | None = Query(default=None, pattern="^(Delivery|Services|Works)$"),
+    has_supplier: bool | None = None,
+    sort: str = Query(default="newest", pattern="^(newest|oldest|title)$"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=12, ge=1, le=48),
+    db: Session = Depends(get_db),
+) -> ProcurementPageOut:
+    return list_procurements(
+        db,
+        dataset=dataset,
+        q=q,
+        since=since,
+        until=until,
+        order_type=order_type,
+        has_supplier=has_supplier,
+        sort=sort,
+        page=page,
+        page_size=page_size,
     )
 
 

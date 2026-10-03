@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { fetchGraph, fetchStories } from "./api";
 import type { GraphData, GraphNode, NodeKind, Story } from "./types";
 
 const kinds: { id: NodeKind; label: string; color: string }[] = [
-  { id: "institution", label: "Instytucje", color: "#8c7cec" },
-  { id: "procurement", label: "Postępowania", color: "#66a791" },
-  { id: "company", label: "Wykonawcy", color: "#e5a26b" },
+  { id: "institution", label: "Instytucje", color: "#a99bff" },
+  { id: "procurement", label: "Postępowania", color: "#a5e9c1" },
+  { id: "company", label: "Wykonawcy", color: "#ffc18e" },
 ];
 
 const kindLabels: Record<NodeKind, string> = {
@@ -16,6 +16,7 @@ const kindLabels: Record<NodeKind, string> = {
 const validKinds: NodeKind[] = ["institution", "procurement", "company"];
 
 function formatMoney(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
   const amount = Number(value);
   if (!Number.isFinite(amount)) return "—";
   return new Intl.NumberFormat("pl-PL", {
@@ -40,14 +41,14 @@ function getNodePositions(nodes: GraphNode[]) {
     procurement: nodes.filter((node) => node.kind === "procurement"),
     company: nodes.filter((node) => node.kind === "company"),
   };
-  const x: Record<NodeKind, number> = { institution: 154, procurement: 500, company: 846 };
+  const x: Record<NodeKind, number> = { institution: 150, procurement: 550, company: 950 };
   const positions = new Map<string, { x: number; y: number }>();
   (Object.keys(columns) as NodeKind[]).forEach((kind) => {
     const list = columns[kind];
-    const top = list.length === 1 ? 340 : 150;
-    const bottom = list.length === 1 ? 340 : 560;
+    const top = list.length === 1 ? 360 : 132;
+    const bottom = list.length === 1 ? 360 : 580;
     list.forEach((node, index) => {
-      const y = list.length === 1 ? 340 : top + ((bottom - top) * index) / (list.length - 1);
+      const y = list.length === 1 ? 360 : top + ((bottom - top) * index) / (list.length - 1);
       positions.set(node.id, { x: x[kind], y });
     });
   });
@@ -57,14 +58,18 @@ function getNodePositions(nodes: GraphNode[]) {
 function shortLabel(label: string): string[] {
   const words = label.split(" ");
   const lines = [""];
+  const width = (value: string) => [...value].reduce((sum, char) => sum + (/\s|[.,]/.test(char) ? 4 : /[A-ZĄĆĘŁŃÓŚŹŻ]/.test(char) ? 9 : 7.2), 0);
   for (const word of words) {
     const last = lines.length - 1;
-    if ((lines[last] + " " + word).trim().length > 23 && lines.length < 2) lines.push(word);
+    if (width((lines[last] + " " + word).trim()) > 218 && lines.length < 2) lines.push(word);
     else lines[last] = (lines[last] + " " + word).trim();
   }
-  if (lines[1]?.length > 25) lines[1] = `${lines[1].slice(0, 23)}…`;
-  if (lines[0].length > 25) lines[0] = `${lines[0].slice(0, 23)}…`;
-  return lines;
+  return lines.map((line) => {
+    if (width(line) <= 218) return line;
+    let cut = line;
+    while (cut.length && width(`${cut}…`) > 218) cut = cut.slice(0, -1);
+    return `${cut.trimEnd()}…`;
+  });
 }
 
 function Symbol({ name }: { name: "search" | "share" | "download" | "arrow" | "close" | "menu" }) {
@@ -93,43 +98,43 @@ function GraphCanvas({
 
   return (
     <div className="graph-canvas" aria-label="Interaktywny graf relacji">
-      <svg viewBox="0 0 1000 680" role="img" aria-labelledby="graph-title graph-description">
+      <svg viewBox="0 0 1100 700" role="group" aria-labelledby="graph-title graph-description">
         <title id="graph-title">Graf zamówień i podmiotów</title>
         <desc id="graph-description">Kliknij węzeł, aby zobaczyć szczegóły i dowody relacji.</desc>
         <defs>
-          <pattern id="graph-grid" width="32" height="32" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" fill="#c9c6bd" opacity=".56" />
+          <pattern id="graph-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="#4b6159" opacity=".55" />
           </pattern>
           <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-            <path d="M0 0 8 4 0 8z" fill="#96958d" />
+            <path d="M0 0 8 4 0 8z" fill="#78968b" />
           </marker>
         </defs>
-        <rect width="1000" height="680" fill="url(#graph-grid)" />
+        <rect width="1100" height="700" fill="url(#graph-grid)" />
         <g className="graph-columns" aria-hidden="true">
-          <text x="154" y="56">ZAMAWIAJĄCY</text>
-          <text x="500" y="56">POSTĘPOWANIA</text>
-          <text x="846" y="56">WYKONAWCY</text>
+          <text x="26" y="60">01 / ZAMAWIAJĄCY</text>
+          <text x="426" y="60">02 / POSTĘPOWANIA</text>
+          <text x="826" y="60">03 / WYKONAWCY</text>
+          <path d="M26 74 H274 M426 74 H674 M826 74 H1074" />
         </g>
         <g className="edge-layer">
           {data.edges.map((edge, index) => {
             const source = positions.get(edge.source_id);
             const target = positions.get(edge.target_id);
             if (!source || !target) return null;
-            const sx = source.x + (target.x > source.x ? 35 : -35);
-            const tx = target.x + (source.x < target.x ? -38 : 38);
-            const bend = (index % 2 === 0 ? -1 : 1) * Math.min(48, Math.abs(target.y - source.y) * 0.15);
+            const sx = source.x + (target.x > source.x ? 126 : -126);
+            const tx = target.x + (source.x < target.x ? -130 : 130);
+            const bend = (index % 2 === 0 ? -1 : 1) * Math.min(35, Math.abs(target.y - source.y) * 0.12);
             const path = `M ${sx} ${source.y} C ${(sx + tx) / 2} ${source.y + bend}, ${(sx + tx) / 2} ${target.y - bend}, ${tx} ${target.y}`;
             const isActive = storyIds.has(edge.source_id) && storyIds.has(edge.target_id);
             return (
-              <g key={edge.id} className={`edge ${isActive ? "edge-active" : ""}`}>
+              <g key={edge.id} className={`edge ${isActive ? "edge-active" : ""} ${edge.source_id === selectedId || edge.target_id === selectedId ? "edge-selected" : ""}`}>
                 <path d={path} markerEnd="url(#arrowhead)" />
-                <text x={(sx + tx) / 2} y={(source.y + target.y) / 2 - 8}>{edge.relationship_type}</text>
               </g>
             );
           })}
         </g>
         <g className="node-layer">
-          {data.nodes.map((node) => {
+          {data.nodes.map((node, nodeIndex) => {
             const point = positions.get(node.id);
             if (!point) return null;
             const selected = node.id === selectedId;
@@ -139,6 +144,7 @@ function GraphCanvas({
               <g
                 key={node.id}
                 className={`graph-node node-${node.kind} ${selected ? "is-selected" : ""} ${inStory ? "in-story" : ""}`}
+                style={{ "--node-order": nodeIndex } as CSSProperties}
                 transform={`translate(${point.x} ${point.y})`}
                 role="button"
                 tabIndex={0}
@@ -152,15 +158,16 @@ function GraphCanvas({
                   }
                 }}
               >
-                <circle className="node-halo" r="34" />
-                <circle className="node-ring" r="25" />
-                <circle className="node-dot" r="6" />
-                <text className="node-kind" y="49">{kindLabels[node.kind].toUpperCase()}</text>
-                <text className="node-name" y="69">
-                  {lines.map((line, index) => <tspan key={index} x="0" dy={index === 0 ? 0 : 16}>{line}</tspan>)}
+                <rect className="node-halo" x="-128" y="-39" width="256" height="78" rx="9" />
+                <rect className="node-card" x="-124" y="-35" width="248" height="70" rx="5" />
+                <rect className="node-accent" x="-124" y="-35" width="4" height="70" rx="2" />
+                <text className="node-kind" x="-107" y="-14">{kindLabels[node.kind].toUpperCase()}</text>
+                <text className="node-index" x="107" y="-14">{String(data.nodes.filter((item) => item.kind === node.kind).findIndex((item) => item.id === node.id) + 1).padStart(2, "0")}</text>
+                <text className="node-name" x="-107" y="8">
+                  {lines.map((line, index) => <tspan key={index} x="-107" dy={index === 0 ? 0 : 17}>{line}</tspan>)}
                 </text>
                 <title>{node.label}</title>
-                <circle className="node-hit-area" r="48" fill="transparent" />
+                <rect className="node-hit-area" x="-124" y="-35" width="248" height="70" fill="transparent" />
               </g>
             );
           })}
@@ -202,6 +209,25 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
+  const searchInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function onSearchShortcut(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInput.current?.focus();
+      }
+      if (event.key === "Escape" && document.activeElement === searchInput.current) {
+        searchInput.current?.blur();
+      }
+      if (event.key === "Escape") {
+        setMobileDetailsOpen(false);
+        setMobileNavOpen(false);
+      }
+    }
+    window.addEventListener("keydown", onSearchShortcut);
+    return () => window.removeEventListener("keydown", onSearchShortcut);
+  }, []);
 
   async function loadGraph(nextQuery = query, nextKinds = visibleKinds, nextDateWindow = dateWindow, nextDataset = dataset) {
     setLoading(true);
@@ -312,9 +338,9 @@ function App() {
           <span className="brand-wordmark">JAWNY<span>ŚLAD</span></span>
         </a>
         <nav className="top-nav" aria-label="Nawigacja główna">
-          <a className="nav-active" href="#explore">Eksploruj</a>
-          <a href="#stories">Ścieżki</a>
-          <a href="#methodology">Metodologia</a>
+          <a className="nav-active" href="#explore" onClick={() => setMobileNavOpen(false)}>Eksploruj</a>
+          <a href="#stories" onClick={() => setMobileNavOpen(false)}>Ścieżki</a>
+          <a href="#methodology" onClick={() => setMobileNavOpen(false)}>Metodologia</a>
         </nav>
         <div className="top-meta">
           <span className="data-status"><i /> {dataset === "demo" ? "DEMO / WARSZAWA" : "BZP / WARSZAWA"}</span>
@@ -356,9 +382,9 @@ function App() {
             <div className="rail-heading"><span>01 / WARSZAWA</span><span>TYLKO ODCZYT</span></div>
             <div className="search-field">
               <Symbol name="search" />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Szukaj w danych" aria-label="Szukaj instytucji, firmy lub postępowania" />
+              <input ref={searchInput} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Szukaj w danych" aria-label="Szukaj instytucji, firmy lub postępowania" />
               {query && <button aria-label="Wyczyść wyszukiwanie" onClick={() => setQuery("")}><Symbol name="close" /></button>}
-              {!query && <kbd>⌘ K</kbd>}
+              {!query && <kbd>⌘ / Ctrl K</kbd>}
             </div>
 
             <div className="rail-section">
@@ -413,6 +439,8 @@ function App() {
             </div>
             {copied && <div className="copy-toast" role="status">Link skopiowany</div>}
             <div className="graph-summary"><span><i className="live-dot" /> {dataset === "demo" ? "DANE DEMONSTRACYJNE" : "OGŁOSZENIA BZP"}</span><span>NAJNOWSZE ZDARZENIE · {formatDate(data?.latest_event_at)}</span></div>
+            {activeStory && <div className="story-focus" role="status"><div><span>WYBRANA ŚCIEŻKA · {activeStory.minutes} MIN</span><p>{activeStory.summary}</p></div><button onClick={() => setActiveStory(null)} aria-label="Zamknij ścieżkę"><Symbol name="close" /></button></div>}
+            <div className="mobile-scroll-hint" aria-hidden="true">Przesuń mapę w bok <span>→</span></div>
             {loading && <div className="loading-line"><i /> Ładowanie grafu…</div>}
             {error && <div className="api-error" role="alert"><strong>Nie mogę połączyć się z API.</strong><span>{error}</span><button onClick={() => void loadGraph()}>Spróbuj ponownie</button></div>}
             {data && <GraphCanvas data={data} selectedId={selectedId} activeStory={activeStory} onSelect={selectNode} />}
@@ -423,6 +451,7 @@ function App() {
             <div className="panel-foot"><span>RELACJA WYNIKA Z REKORDU POSTĘPOWANIA</span><span>ŹRÓDŁO · DATA · KONTEKST</span></div>
           </section>
 
+          {mobileDetailsOpen && <button className="detail-backdrop" aria-label="Zamknij szczegóły" onClick={() => setMobileDetailsOpen(false)} />}
           <aside className={`detail-rail ${mobileDetailsOpen ? "details-open" : ""}`} aria-label="Szczegóły wybranego elementu">
             <div className="detail-header">
               <div className="section-label"><span>02 / KARTA PODMIOTU</span></div>
@@ -488,7 +517,7 @@ function App() {
         <footer className="site-footer">
           <a className="footer-brand" href="#top">JAWNY ŚLAD</a>
           <span>Otwieramy dane. Pokazujemy dowody.</span>
-          <span>PROJEKT PORTFOLIO <i>·</i> 2026</span>
+          <span>DANE PUBLICZNE <i>·</i> WARSZAWA</span>
         </footer>
       </main>
     </div>

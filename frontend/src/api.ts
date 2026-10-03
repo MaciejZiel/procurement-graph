@@ -18,6 +18,7 @@ export function fetchGraph(options: {
   until?: string;
   focus?: string;
   orderType?: string;
+  offset?: number;
 } = {}): Promise<GraphData> {
   const params = new URLSearchParams();
   if (options.query?.trim()) params.set("q", options.query.trim());
@@ -27,6 +28,7 @@ export function fetchGraph(options: {
   if (options.until) params.set("until", options.until);
   if (options.focus) params.set("focus", options.focus);
   if (options.orderType) params.set("order_type", options.orderType);
+  if (options.offset) params.set("offset", String(options.offset));
   return getJson<GraphData>(`graph?${params.toString()}`);
 }
 

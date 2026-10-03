@@ -25,6 +25,9 @@ export interface GraphEdge {
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  total_tenders: number;
+  offset: number;
+  limit: number;
   latest_event_at: string | null;
   data_mode: "demo" | "live";
   notice: string;

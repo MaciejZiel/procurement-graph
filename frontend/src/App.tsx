@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { fetchGraph, fetchProcurements, fetchStories } from "./api";
 import Catalog from "./Catalog";
 import type { GraphData, GraphNode, NodeKind, ProcurementItem, ProcurementPage, Story } from "./types";
@@ -15,6 +15,8 @@ const kindLabels: Record<NodeKind, string> = {
   company: "Wykonawca",
 };
 const validKinds: NodeKind[] = ["institution", "procurement", "company"];
+const graphPageSize = 6;
+const defaultViewport = { x: 0, y: 0, width: 1100, height: 700 };
 
 function formatMoney(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
@@ -102,14 +104,90 @@ function GraphCanvas({
   selectedId,
   activeStory,
   onSelect,
+  expanded,
+  onExpand,
 }: {
   data: GraphData;
   selectedId: string | null;
   activeStory: Story | null;
   onSelect: (node: GraphNode) => void;
+  expanded: boolean;
+  onExpand: () => void;
 }) {
   const positions = useMemo(() => getNodePositions(data.nodes), [data.nodes]);
   const storyIds = new Set(activeStory?.node_ids ?? []);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [viewport, setViewport] = useState(defaultViewport);
+  const [dragging, setDragging] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const dragStart = useRef<{ clientX: number; clientY: number; x: number; y: number } | null>(null);
+  const activeId = hoveredId ?? selectedId;
+  const tracedEdges = useMemo(() => {
+    if (!activeId) return new Set<string>();
+    const tenders = new Set<string>();
+    const selected = data.nodes.find((node) => node.id === activeId);
+    if (selected?.kind === "procurement") tenders.add(activeId);
+    for (const edge of data.edges) {
+      if (edge.source_id !== activeId && edge.target_id !== activeId) continue;
+      const otherId = edge.source_id === activeId ? edge.target_id : edge.source_id;
+      if (data.nodes.some((node) => node.id === otherId && node.kind === "procurement")) tenders.add(otherId);
+    }
+    return new Set(data.edges.filter((edge) => tenders.has(edge.source_id) || tenders.has(edge.target_id)).map((edge) => edge.id));
+  }, [activeId, data]);
+  const tracedNodes = useMemo(() => {
+    const ids = new Set<string>(activeId ? [activeId] : []);
+    for (const edge of data.edges) {
+      if (tracedEdges.has(edge.id)) {
+        ids.add(edge.source_id);
+        ids.add(edge.target_id);
+      }
+    }
+    return ids;
+  }, [activeId, data.edges, tracedEdges]);
+
+  useEffect(() => {
+    setViewport(defaultViewport);
+    setHoveredId(null);
+    if (window.innerWidth <= 700 && canvasRef.current) canvasRef.current.scrollLeft = 112;
+  }, [data]);
+
+  function zoom(factor: number) {
+    setViewport((current) => {
+      const width = Math.max(520, Math.min(1100, current.width * factor));
+      const height = width * 700 / 1100;
+      return {
+        x: Math.max(0, Math.min(1100 - width, current.x + (current.width - width) / 2)),
+        y: Math.max(0, Math.min(700 - height, current.y + (current.height - height) / 2)),
+        width,
+        height,
+      };
+    });
+  }
+
+  function startDrag(event: ReactPointerEvent<SVGSVGElement>) {
+    if (viewport.width === 1100 || (event.target as Element).closest(".graph-node")) return;
+    dragStart.current = { clientX: event.clientX, clientY: event.clientY, x: viewport.x, y: viewport.y };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+  }
+
+  function moveDrag(event: ReactPointerEvent<SVGSVGElement>) {
+    const start = dragStart.current;
+    if (!start) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    const dx = (event.clientX - start.clientX) * viewport.width / box.width;
+    const dy = (event.clientY - start.clientY) * viewport.height / box.height;
+    setViewport((current) => ({
+      ...current,
+      x: Math.max(0, Math.min(1100 - current.width, start.x - dx)),
+      y: Math.max(0, Math.min(700 - current.height, start.y - dy)),
+    }));
+  }
+
+  function stopDrag() {
+    dragStart.current = null;
+    setDragging(false);
+  }
   const counts = useMemo(() => ({
     institution: data.nodes.filter((node) => node.kind === "institution").length,
     procurement: data.nodes.filter((node) => node.kind === "procurement").length,
@@ -117,8 +195,14 @@ function GraphCanvas({
   }), [data.nodes]);
 
   return (
-    <div className="graph-canvas" aria-label="Interaktywny graf relacji">
-      <svg viewBox="0 0 1100 700" role="group" aria-labelledby="graph-title graph-description">
+    <div ref={canvasRef} className={`graph-canvas ${dragging ? "map-dragging" : ""}`} aria-label="Interaktywny graf relacji">
+      <div className="map-tools" aria-label="Narzędzia mapy">
+        <button onClick={() => zoom(.78)} disabled={viewport.width <= 520} aria-label="Powiększ mapę" title="Powiększ">+</button>
+        <button onClick={() => zoom(1.28)} disabled={viewport.width >= 1100} aria-label="Pomniejsz mapę" title="Pomniejsz">−</button>
+        <button onClick={() => setViewport(defaultViewport)} disabled={viewport.width >= 1100} aria-label="Dopasuj mapę" title="Dopasuj mapę">⌖</button>
+        <button onClick={onExpand} aria-label={expanded ? "Zamknij pełny ekran mapy" : "Otwórz mapę na pełnym ekranie"} title={expanded ? "Zamknij pełny ekran" : "Pełny ekran"}>{expanded ? "↙" : "⛶"}</button>
+      </div>
+      <svg viewBox={`${viewport.x} ${viewport.y} ${viewport.width} ${viewport.height}`} role="group" aria-labelledby="graph-title graph-description" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerCancel={stopDrag}>
         <title id="graph-title">Graf zamówień i podmiotów</title>
         <desc id="graph-description">Kliknij węzeł, aby zobaczyć szczegóły i dowody relacji.</desc>
         <defs>
@@ -147,7 +231,7 @@ function GraphCanvas({
             const path = `M ${sx} ${source.y} C ${(sx + tx) / 2} ${source.y + bend}, ${(sx + tx) / 2} ${target.y - bend}, ${tx} ${target.y}`;
             const isActive = storyIds.has(edge.source_id) && storyIds.has(edge.target_id);
             return (
-              <g key={edge.id} className={`edge ${isActive ? "edge-active" : ""} ${edge.source_id === selectedId || edge.target_id === selectedId ? "edge-selected" : ""}`}>
+              <g key={edge.id} className={`edge ${isActive ? "edge-active" : ""} ${tracedEdges.has(edge.id) ? "edge-traced" : activeId ? "edge-muted" : ""}`}>
                 <path d={path} markerEnd="url(#arrowhead)" />
               </g>
             );
@@ -166,7 +250,7 @@ function GraphCanvas({
             return (
               <g
                 key={node.id}
-                className={`graph-node node-${node.kind} ${compact ? "node-compact" : ""} ${selected ? "is-selected" : ""} ${inStory ? "in-story" : ""}`}
+                className={`graph-node node-${node.kind} ${compact ? "node-compact" : ""} ${selected ? "is-selected" : ""} ${inStory ? "in-story" : ""} ${activeId && !tracedNodes.has(node.id) ? "node-muted" : ""}`}
                 style={{ "--node-order": nodeIndex } as CSSProperties}
                 transform={`translate(${point.x} ${point.y})`}
                 role="button"
@@ -174,6 +258,10 @@ function GraphCanvas({
                 aria-label={`${kindLabels[node.kind]}: ${node.label}`}
                 aria-pressed={selected}
                 onClick={() => onSelect(node)}
+                onPointerEnter={() => setHoveredId(node.id)}
+                onPointerLeave={() => setHoveredId(null)}
+                onFocus={() => setHoveredId(node.id)}
+                onBlur={() => setHoveredId(null)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
@@ -204,10 +292,42 @@ function GraphCanvas({
         </div>
       )}
       <div className="graph-axis" aria-hidden="true">
-        <span>→</span><small>przepływ postępowania</small><span>↗</span>
+        <span>→</span><small>{viewport.width < 1100 ? "przeciągnij, aby przesunąć" : "kliknij węzeł, aby śledzić relację"}</small><span>↗</span>
       </div>
     </div>
   );
+}
+
+function EvidenceRoute({ data, selectedNode, onSelect }: {
+  data: GraphData;
+  selectedNode: GraphNode | null;
+  onSelect: (node: GraphNode) => void;
+}) {
+  if (!selectedNode) return null;
+  const byId = new Map(data.nodes.map((node) => [node.id, node]));
+  const tender = selectedNode.kind === "procurement" ? selectedNode : data.edges
+    .filter((edge) => edge.source_id === selectedNode.id || edge.target_id === selectedNode.id)
+    .map((edge) => byId.get(edge.source_id === selectedNode.id ? edge.target_id : edge.source_id))
+    .find((node) => node?.kind === "procurement");
+  if (!tender) return null;
+  const buyerEdge = data.edges.find((edge) => edge.target_id === tender.id && byId.get(edge.source_id)?.kind === "institution");
+  const buyer = buyerEdge ? byId.get(buyerEdge.source_id) : null;
+  const suppliers = data.edges.filter((edge) => edge.source_id === tender.id && byId.get(edge.target_id)?.kind === "company")
+    .map((edge) => byId.get(edge.target_id)!)
+    .filter(Boolean);
+  const source = buyerEdge?.evidence_url ?? data.edges.find((edge) => edge.source_id === tender.id)?.evidence_url;
+
+  return <div className="evidence-route" aria-label="Ścieżka wybranego postępowania">
+    <div className="route-heading"><span>AKTYWNA ŚCIEŻKA</span><span>{formatDate(tender.details.published_on)}</span></div>
+    <div className="route-content">
+      <button className="route-stop route-buyer" onClick={() => buyer && onSelect(buyer)} disabled={!buyer}><small>01 / ZAMAWIAJĄCY</small><strong>{buyer?.label ?? "Nie podano"}</strong></button>
+      <span className="route-arrow" aria-hidden="true">⟶</span>
+      <button className="route-stop route-main" onClick={() => onSelect(tender)}><small>02 / POSTĘPOWANIE</small><strong>{tender.label}</strong></button>
+      <span className="route-arrow" aria-hidden="true">⟶</span>
+      <button className="route-stop route-supplier" onClick={() => suppliers[0] && onSelect(suppliers[0])} disabled={!suppliers.length}><small>03 / WYKONAWCA{Math.max(0, suppliers.length - 1) ? ` +${suppliers.length - 1}` : ""}</small><strong>{suppliers[0]?.label ?? "Nie wskazano"}</strong></button>
+      {source && <a href={source} target="_blank" rel="noreferrer" className="route-source">Źródło ↗</a>}
+    </div>
+  </div>;
 }
 
 function App() {
@@ -243,6 +363,11 @@ function App() {
   const [supplierFilter, setSupplierFilter] = useState<"all" | "with" | "without">("all");
   const [catalogSort, setCatalogSort] = useState<"newest" | "oldest" | "title">("newest");
   const [focusTender, setFocusTender] = useState<string | null>(() => new URLSearchParams(window.location.search).get("focus"));
+  const [graphOffset, setGraphOffset] = useState(() => {
+    const raw = Number(new URLSearchParams(window.location.search).get("offset") ?? 0);
+    return Number.isFinite(raw) && raw > 0 ? Math.floor(raw / graphPageSize) * graphPageSize : 0;
+  });
+  const [mapExpanded, setMapExpanded] = useState(false);
   const searchInput = useRef<HTMLInputElement>(null);
   const requestVersion = useRef(0);
   const catalogRequestVersion = useRef(0);
@@ -259,11 +384,17 @@ function App() {
       if (event.key === "Escape") {
         setMobileDetailsOpen(false);
         setMobileNavOpen(false);
+        setMapExpanded(false);
       }
     }
     window.addEventListener("keydown", onSearchShortcut);
     return () => window.removeEventListener("keydown", onSearchShortcut);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mapExpanded ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mapExpanded]);
 
   async function loadGraph(nextQuery = query, nextKinds = visibleKinds, nextDateWindow = dateWindow, nextDataset = dataset) {
     const version = ++requestVersion.current;
@@ -277,10 +408,11 @@ function App() {
         ...periodBounds(nextDateWindow),
         focus: focusTender ?? undefined,
         orderType: catalogOrderType || undefined,
+        offset: focusTender ? 0 : graphOffset,
       });
       if (version !== requestVersion.current) return;
       setData(next);
-      setSelectedId((current) => next.nodes.some((node) => node.id === current) ? current : next.nodes[0]?.id ?? null);
+      setSelectedId((current) => next.nodes.some((node) => node.id === current) ? current : next.nodes.find((node) => node.kind === "procurement")?.id ?? next.nodes[0]?.id ?? null);
     } catch (caught) {
       if (version === requestVersion.current) setError(caught instanceof Error ? caught.message : "Nie udało się pobrać danych.");
     } finally {
@@ -307,7 +439,7 @@ function App() {
     setError(null);
     const timer = window.setTimeout(() => void loadGraph(query, visibleKinds, dateWindow, dataset), 180);
     return () => window.clearTimeout(timer);
-  }, [query, visibleKinds, dateWindow, dataset, focusTender, catalogOrderType]);
+  }, [query, visibleKinds, dateWindow, dataset, focusTender, catalogOrderType, graphOffset]);
 
   useEffect(() => {
     const version = ++catalogRequestVersion.current;
@@ -359,6 +491,8 @@ function App() {
     url.searchParams.set("dataset", dataset);
     if (focusTender) url.searchParams.set("focus", focusTender);
     else url.searchParams.delete("focus");
+    if (graphOffset && !focusTender) url.searchParams.set("offset", String(graphOffset));
+    else url.searchParams.delete("offset");
     try {
       if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
       await navigator.clipboard.writeText(url.toString());
@@ -391,6 +525,7 @@ function App() {
     setSupplierFilter("all");
     setCatalogPage(1);
     setFocusTender(null);
+    setGraphOffset(0);
     setActiveStory(story);
     setSelectedId(story.node_ids[0] ?? null);
     setMobileDetailsOpen(false);
@@ -401,11 +536,30 @@ function App() {
     setMobileDetailsOpen(true);
   }
 
+  function showGraphPage(offset: number) {
+    requestVersion.current += 1;
+    setData(null);
+    setLoading(true);
+    setSelectedId(null);
+    setFocusTender(null);
+    setActiveStory(null);
+    setGraphOffset(offset);
+  }
+
+  function showRandomGraphPage() {
+    const pages = Math.ceil((data?.total_tenders ?? 0) / graphPageSize);
+    if (pages < 2) return;
+    const current = Math.floor(graphOffset / graphPageSize);
+    const chosen = Math.floor(Math.random() * (pages - 1));
+    showGraphPage((chosen >= current ? chosen + 1 : chosen) * graphPageSize);
+  }
+
   function selectProcurement(item: ProcurementItem) {
     requestVersion.current += 1;
     setData(null);
     setLoading(true);
     setFocusTender(item.id);
+    setGraphOffset(0);
     setSelectedId(item.id);
     setActiveStory(null);
     setMobileDetailsOpen(window.innerWidth <= 1060);
@@ -419,6 +573,7 @@ function App() {
     setDateWindow("all");
     setCatalogPage(1);
     setFocusTender(null);
+    setGraphOffset(0);
   }
 
   return (
@@ -447,6 +602,10 @@ function App() {
             <div className="eyebrow"><span className="eyebrow-line" /> PRACOWNIA DANYCH PUBLICZNYCH <span className="eyebrow-year">VOL. 01 / 2026</span></div>
             <h1>Każdy przetarg<br />zostawia <em>ślad.</em></h1>
             <p>Połącz instytucje, postępowania i wykonawców. Potem sprawdź, co naprawdę mówią źródła.</p>
+            <div className="intro-actions">
+              <button onClick={() => setMapExpanded(true)}>Otwórz atlas powiązań <span aria-hidden="true">↗</span></button>
+              <a href="#catalog">Zobacz rejestr{catalogData ? ` · ${catalogData.total.toLocaleString("pl-PL")}` : ""} <span aria-hidden="true">→</span></a>
+            </div>
           </div>
           <div className="intro-side-note">
             <span>W TEJ PRACOWNI</span>
@@ -469,12 +628,12 @@ function App() {
           <div className="metric-footnote">Mapa pokazuje wycinek · <a href="#catalog">przejdź do pełnego rejestru ↗</a></div>
         </section>
 
-        <section className="workbench" aria-label="Eksplorator powiązań">
+        <section className={`workbench ${mapExpanded ? "map-expanded" : ""}`} aria-label="Eksplorator powiązań">
           <aside className="left-rail">
             <div className="rail-heading"><span>01 / WARSZAWA</span><span>TYLKO ODCZYT</span></div>
             <div className="search-field">
               <Symbol name="search" />
-              <input ref={searchInput} name="search" value={query} onChange={(event) => { setQuery(event.target.value); setCatalogPage(1); setFocusTender(null); }} placeholder="Szukaj w danych" aria-label="Szukaj instytucji, firmy lub postępowania" />
+              <input ref={searchInput} name="search" value={query} onChange={(event) => { setQuery(event.target.value); setCatalogPage(1); setGraphOffset(0); setFocusTender(null); }} placeholder="Szukaj w danych" aria-label="Szukaj instytucji, firmy lub postępowania" />
               {query && <button aria-label="Wyczyść wyszukiwanie" onClick={() => { setQuery(""); setCatalogPage(1); }}><Symbol name="close" /></button>}
               {!query && <kbd>⌘ / Ctrl K</kbd>}
             </div>
@@ -516,11 +675,11 @@ function App() {
                 <h2>{activeStory?.title ?? "Przepływ zamówień"}</h2>
               </div>
               <div className="toolbar-actions">
-                <label className="date-select data-select"><span>ZBIÓR</span><select name="dataset" value={dataset} onChange={(event) => { requestVersion.current += 1; setData(null); setCatalogData(null); setLoading(true); setDataset(event.target.value as "demo" | "live"); setActiveStory(null); setMobileDetailsOpen(false); setFocusTender(null); setCatalogPage(1); setCatalogOrderType(""); setSupplierFilter("all"); }} aria-label="Wybierz dane demonstracyjne lub BZP">
+                <label className="date-select data-select"><span>ZBIÓR</span><select name="dataset" value={dataset} onChange={(event) => { requestVersion.current += 1; setData(null); setCatalogData(null); setLoading(true); setDataset(event.target.value as "demo" | "live"); setActiveStory(null); setMobileDetailsOpen(false); setFocusTender(null); setGraphOffset(0); setCatalogPage(1); setCatalogOrderType(""); setSupplierFilter("all"); }} aria-label="Wybierz dane demonstracyjne lub BZP">
                   <option value="demo">Scenariusz demo</option>
                   <option value="live">Zaimportowane BZP</option>
                 </select></label>
-                <label className="date-select"><span>OKRES</span><select name="period" value={dateWindow} onChange={(event) => { setDateWindow(event.target.value); setCatalogPage(1); setFocusTender(null); }} aria-label="Zakres dat">
+                <label className="date-select"><span>OKRES</span><select name="period" value={dateWindow} onChange={(event) => { setDateWindow(event.target.value); setCatalogPage(1); setGraphOffset(0); setFocusTender(null); }} aria-label="Zakres dat">
                   <option value="24m">Ostatnie 2 lata</option>
                   <option value="12m">Ostatnie 12 miesięcy</option>
                   <option value="all">Cały okres</option>
@@ -532,11 +691,20 @@ function App() {
             {copied && <div className="copy-toast" role="status">Link skopiowany</div>}
             <div className="graph-summary"><span><i className="live-dot" /> {dataset === "demo" ? "DANE DEMONSTRACYJNE" : "OGŁOSZENIA BZP"}</span><span>NAJNOWSZE ZDARZENIE · {formatDate(data?.latest_event_at)}</span></div>
             {activeStory && <div className="story-focus" role="status"><div><span>WYBRANA ŚCIEŻKA · {activeStory.minutes} MIN</span><p>{activeStory.summary}</p></div><button onClick={() => setActiveStory(null)} aria-label="Zamknij ścieżkę"><Symbol name="close" /></button></div>}
-            {focusTender && <div className="focus-record"><span>Wybrane postępowanie z rejestru</span><button onClick={() => setFocusTender(null)}>Pokaż najnowsze ↗</button></div>}
+            {focusTender && <div className="focus-record"><span>Wybrane postępowanie z rejestru</span><button onClick={() => { setFocusTender(null); setGraphOffset(0); }}>Pokaż najnowsze ↗</button></div>}
+            <div className="atlas-navigation" aria-label="Przeglądanie mapy">
+              <div className="atlas-position"><span>{focusTender ? "WYBRANA SPRAWA" : `WIDOK ${String(Math.floor(graphOffset / graphPageSize) + 1).padStart(3, "0")}`}</span><strong>{data ? (focusTender ? "1 POSTĘPOWANIE" : `${Math.min(data.offset + 1, data.total_tenders)}–${Math.min(data.offset + data.limit, data.total_tenders)} / ${data.total_tenders.toLocaleString("pl-PL")}`) : "ŁADOWANIE..."}</strong></div>
+              <div className="atlas-actions">
+                <button onClick={() => showGraphPage(Math.max(0, graphOffset - graphPageSize))} disabled={loading || !!focusTender || graphOffset === 0} aria-label="Poprzednie postępowania">←</button>
+                <button onClick={() => showGraphPage(graphOffset + graphPageSize)} disabled={loading || !!focusTender || !data || graphOffset + graphPageSize >= data.total_tenders} aria-label="Kolejne postępowania">→</button>
+                <button className="atlas-shuffle" onClick={showRandomGraphPage} disabled={loading || !data || data.total_tenders <= graphPageSize}>Losowy widok ↗</button>
+              </div>
+            </div>
             <div className="mobile-scroll-hint" aria-hidden="true">Przesuń mapę w bok <span>→</span></div>
             {loading && <div className="loading-line"><i /> Ładowanie grafu…</div>}
             {error && <div className="api-error" role="alert"><strong>Nie mogę połączyć się z API.</strong><span>{error}</span><button onClick={() => void loadGraph()}>Spróbuj ponownie</button></div>}
-            {data && <GraphCanvas data={data} selectedId={selectedId} activeStory={activeStory} onSelect={selectNode} />}
+            {data && <GraphCanvas data={data} selectedId={selectedId} activeStory={activeStory} onSelect={selectNode} expanded={mapExpanded} onExpand={() => setMapExpanded((expanded) => !expanded)} />}
+            {data && <EvidenceRoute data={data} selectedNode={selectedNode} onSelect={selectNode} />}
             <div className="graph-legend">
               <div>{kinds.map((kind) => <span key={kind.id}><i style={{ "--dot-color": kind.color } as CSSProperties} />{kind.label}</span>)}</div>
               <span className="legend-hint">KLIKNIJ WĘZEŁ, ABY ZOBACZYĆ SZCZEGÓŁY</span>
@@ -619,7 +787,7 @@ function App() {
           orderType={catalogOrderType}
           supplierFilter={supplierFilter}
           sort={catalogSort}
-          onOrderType={(value) => { setCatalogOrderType(value); setCatalogPage(1); setFocusTender(null); }}
+          onOrderType={(value) => { setCatalogOrderType(value); setCatalogPage(1); setGraphOffset(0); setFocusTender(null); }}
           onSupplierFilter={(value) => { setSupplierFilter(value); setCatalogPage(1); }}
           onSort={(value) => { setCatalogSort(value); setCatalogPage(1); }}
           onPage={setCatalogPage}

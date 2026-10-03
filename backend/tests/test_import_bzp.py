@@ -45,6 +45,25 @@ def test_extract_rows_fails_closed_for_unknown_response():
         extract_rows({"message": "unexpected"})
 
 
+def test_normalise_official_tender_result_shape():
+    row = {
+        "noticeNumber": "2026/BZP 00415305/01",
+        "noticeType": "TenderResultNotice",
+        "publicationDate": "2026-09-01T06:24:59Z",
+        "orderObject": "Budowa drogi rowerowej",
+        "organizationName": "Zarząd Dróg",
+        "organizationCity": "Warszawa",
+        "organizationNationalId": "1132097244",
+        "objectId": "08df07f1-bf8f-a3cf-ab56-940001e5a4fb",
+        "contractors": [{"contractorName": "Firma Drogowa", "contractorNationalId": "1234567890"}],
+    }
+    result = normalise_notice(row)
+    assert result is not None
+    assert result["supplier"] == "Firma Drogowa"
+    assert result["buyer_tax_id"] == "1132097244"
+    assert "NoticeNumber=2026%2FBZP+00415305%2F01" in result["source_url"]
+
+
 def test_normalise_notice_keeps_only_city_with_source_evidence():
     accepted = normalise_notice(notice("2025/01", "Utrzymanie systemu"))
     rejected_city = normalise_notice(

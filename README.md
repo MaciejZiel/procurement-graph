@@ -27,7 +27,16 @@ docker compose up --build
 
 Frontend będzie dostępny pod `http://localhost:5173`, a dokumentacja API pod `http://localhost:8000/docs`.
 
-Można też uruchomić frontend i backend oddzielnie. Instrukcje znajdują się w katalogach `frontend/` i `backend/`.
+Do lokalnej pracy bez Dockera można utworzyć środowisko backendu i uruchomić oba serwery razem:
+
+```bash
+uv venv backend/.venv
+uv pip install --python backend/.venv/bin/python -e 'backend[dev]'
+cd frontend && npm install
+npm run dev
+```
+
+Tryb lokalny uruchamia API i frontend razem oraz używa pliku SQLite w ignorowanym katalogu `data/`. Compose uruchamia PostgreSQL i pozostaje właściwą konfiguracją do sprawdzania zachowania aplikacji na docelowej bazie.
 
 Po uruchomieniu Compose importer można odpalić na próbce pobranej z BZP:
 
@@ -35,13 +44,13 @@ Po uruchomieniu Compose importer można odpalić na próbce pobranej z BZP:
 docker compose exec backend python -m app.import_bzp --input /app/data/bzp.json --city Warszawa
 ```
 
-Bez `--input` importer pobiera odpowiedź spod `BZP_API_URL` (domyślnie oficjalny endpoint e‑Zamówień). Ponieważ format odpowiedzi dostawcy może się zmieniać, nieznany format jest zapisany lokalnie i odrzucany bez tworzenia relacji. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
+Bez `--input` importer pobiera z oficjalnego API ogłoszenia o wyniku postępowania (`TenderResultNotice`) dla Warszawy z ostatnich dwóch lat. Można ustawić `--since YYYY-MM-DD`, `--notice-type`, `--page-size` (maks. 500) i `--max-pages` (domyślnie 10). Po osiągnięciu limitu stron importer informuje, że zbiór może być niepełny. Krawędź do wykonawcy powstaje wyłącznie wtedy, gdy API podaje jego nazwę. Dowód prowadzi do zapytania BZP o konkretne ogłoszenie. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
 
 ## Dane i metodologia
 
 Docelowym źródłem krajowych ogłoszeń jest bezpłatny webserwis BZP platformy e‑Zamówienia: <https://ezamowienia.gov.pl/mo-board/api/v1/notice>. W pierwszej wersji import należy ograniczyć do ogłoszeń warszawskich instytucji z ostatnich dwóch lat; wykonawcy mogą pochodzić z całej Polski. Dane z TED oraz automatyczne wzbogacanie profili z KRS są planowane jako kolejne źródła.
 
-Źródło: [materiały integracyjne e‑Zamówień](https://ezamowienia.gov.pl/pl/integracja/). Zakres i format danych należy weryfikować z aktualną instrukcją API przed włączeniem importu produkcyjnego.
+Źródło: [materiały integracyjne e‑Zamówień](https://ezamowienia.gov.pl/pl/integracja/), w tym specyfikacja OpenAPI BZP. Mapowanie sprawdzono z rzeczywistą odpowiedzią API; przed uruchomieniem produkcyjnym warto ponownie zweryfikować format dostawcy.
 
 ### Zasady prezentacji
 

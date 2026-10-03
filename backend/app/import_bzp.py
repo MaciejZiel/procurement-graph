@@ -10,10 +10,11 @@ import json
 import os
 import re
 import unicodedata
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 
 import httpx
 from sqlalchemy.orm import Session
@@ -22,6 +23,24 @@ from .database import SessionLocal
 from .models import GraphEdge, GraphNode
 
 DEFAULT_BZP_URL = "https://ezamowienia.gov.pl/mo-board/api/v1/notice"
+
+
+def _official_notice_url(row: dict[str, Any]) -> str | None:
+    number = row.get("noticeNumber")
+    published = _parse_date(row.get("publicationDate"))
+    kind = row.get("noticeType")
+    if not (number and published and kind and row.get("objectId")):
+        return None
+    params = urlencode(
+        {
+            "NoticeType": kind,
+            "NoticeNumber": number,
+            "PublicationDateFrom": published.isoformat(),
+            "PublicationDateTo": published.isoformat(),
+            "PageSize": 100,
+        }
+    )
+    return f"{DEFAULT_BZP_URL}?{params}"
 
 
 def _first(record: dict[str, Any], *keys: str) -> Any:
@@ -119,6 +138,7 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         "contractingAuthorityName",
         "contractingEntityName",
         "buyerName",
+        "organizationName",
         "contractingAuthority",
         "buyer",
     )
@@ -127,6 +147,7 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         (
             "contractingAuthorityCity",
             "buyerCity",
+            "organizationCity",
             "city",
             "locality",
             "contractingAuthority",
@@ -135,9 +156,21 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         "city",
         "locality",
     )
-    title = _nested_name(row, "title", "contractName", "subject", "objectName", "name")
+    title = _nested_name(
+        row, "orderObject", "title", "contractName", "subject", "objectName", "name"
+    )
+    contractors = row.get("contractors")
+    contractor = (
+        next(
+            (item for item in contractors if isinstance(item, dict) and item.get("contractorName")),
+            None,
+        )
+        if isinstance(contractors, list)
+        else None
+    )
     supplier = _nested_name(
         row,
+        "contractorName",
         "winnerName",
         "winningSupplierName",
         "contractorName",
@@ -145,7 +178,7 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         "winner",
         "contractor",
         "supplier",
-    )
+    ) or (_nested_name(contractor, "contractorName") if contractor else None)
     buyer_tax_id = _nested_field(
         row,
         ("contractingAuthority", "buyer"),
@@ -153,16 +186,22 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         "taxId",
         "nationalId",
         "regon",
-    ) or _first(row, "contractingAuthorityNip", "buyerNip", "buyerRegon")
-    supplier_tax_id = _nested_field(
-        row,
-        ("winner", "contractor", "supplier"),
-        "nip",
-        "taxId",
-        "nationalId",
-        "regon",
-    ) or _first(row, "winnerNip", "contractorNip", "supplierNip", "winnerRegon")
-    source_url = _first(row, "noticeUrl", "sourceUrl", "detailUrl", "url")
+    ) or _first(row, "organizationNationalId", "contractingAuthorityNip", "buyerNip", "buyerRegon")
+    supplier_tax_id = (
+        _nested_field(
+            row,
+            ("winner", "contractor", "supplier"),
+            "nip",
+            "taxId",
+            "nationalId",
+            "regon",
+        )
+        or (contractor.get("contractorNationalId") if contractor else None)
+        or _first(row, "winnerNip", "contractorNip", "supplierNip", "winnerRegon")
+    )
+    source_url = _first(row, "noticeUrl", "sourceUrl", "detailUrl", "url") or _official_notice_url(
+        row
+    )
     published = _parse_date(_first(row, "publicationDate", "publishedAt", "noticeDate", "date"))
     amount = _parse_amount(
         _first(row, "awardValue", "contractAmount", "awardedValue", "contractValue")
@@ -306,25 +345,42 @@ def main() -> None:
     parser.add_argument(
         "--since", default=None, help="Data graniczna YYYY-MM-DD; domyślnie ostatnie 2 lata"
     )
+    parser.add_argument("--notice-type", default="TenderResultNotice")
+    parser.add_argument("--page-size", type=int, default=500)
+    parser.add_argument("--max-pages", type=int, default=10)
     args = parser.parse_args()
+    today = date.today()
+    cutoff = date.fromisoformat(args.since) if args.since else today - timedelta(days=730)
 
     if args.input:
         payload = json.loads(args.input.read_text(encoding="utf-8"))
     else:
-        response = httpx.get(args.url, timeout=30, follow_redirects=True)
-        response.raise_for_status()
-        try:
-            payload = response.json()
-        except ValueError as error:
-            snapshot = (
-                Path(os.getenv("BZP_SNAPSHOT_DIR", "/tmp/jawny-slad-bzp")) / "bzp-response.html"
-            )
-            snapshot.parent.mkdir(parents=True, exist_ok=True)
-            snapshot.write_text(response.text, encoding="utf-8")
-            raise SystemExit(
-                f"API nie zwróciło JSON. Odpowiedź zapisana do {snapshot}; "
-                "sprawdź aktualną instrukcję BZP."
-            ) from error
+        if not 1 <= args.page_size <= 500 or args.max_pages < 1:
+            parser.error("PageSize musi być w zakresie 1–500, a max-pages musi być dodatnie.")
+        payload = []
+        search_after = None
+        for page in range(args.max_pages):
+            params = {
+                "NoticeType": args.notice_type,
+                "PublicationDateFrom": cutoff.isoformat(),
+                "PublicationDateTo": today.isoformat(),
+                "OrganizationCity": args.city,
+                "PageSize": args.page_size,
+            }
+            if search_after:
+                params["SearchAfter"] = search_after
+            response = httpx.get(args.url, params=params, timeout=30, follow_redirects=True)
+            response.raise_for_status()
+            page_rows = extract_rows(response.json())
+            payload.extend(page_rows)
+            if len(page_rows) < args.page_size:
+                break
+            next_cursor = page_rows[-1].get("objectId")
+            if not next_cursor or next_cursor == search_after:
+                raise SystemExit("Brak nowego kursora ObjectId; import przerwany.")
+            search_after = next_cursor
+        else:
+            print(f"Osiągnięto limit {args.max_pages} stron; możliwe są dalsze ogłoszenia.")
 
     try:
         rows = extract_rows(payload)
@@ -335,10 +391,6 @@ def main() -> None:
         raise SystemExit(f"{error} Odpowiedź zapisana do {snapshot}.") from error
 
     with SessionLocal() as session:
-        today = date.today()
-        cutoff = (
-            date.fromisoformat(args.since) if args.since else today.replace(year=today.year - 2)
-        )
         count = save_notices(session, rows, city_filter=args.city, since=cutoff)
     print(f"Zaimportowano lub zaktualizowano {count} ogłoszeń z miasta: {args.city}.")
 

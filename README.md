@@ -2,7 +2,9 @@
 
 **Zobacz, jak łączą się zamówienia publiczne.**
 
-Jawny Ślad to projekt portfolio do odkrywania powiązań między instytucjami, wykonawcami i postępowaniami publicznymi. Każde połączenie w grafie ma prowadzić do dowodu w źródłowym ogłoszeniu. Aplikacja pokazuje wzorce do sprawdzenia, nie oskarżenia.
+Jawny Ślad to aplikacja do odkrywania powiązań między instytucjami, wykonawcami i postępowaniami publicznymi. Każde połączenie w grafie prowadzi do informacji o źródle. Aplikacja pokazuje wzorce do sprawdzenia, nie oskarżenia.
+
+![Eksplorator powiązań w trybie demonstracyjnym](docs/dashboard.png)
 
 > **Demo:** obecny zestaw danych jest fikcyjny i służy wyłącznie prezentacji interfejsu. Aplikacja oznacza go jako dane demonstracyjne.
 
@@ -32,19 +34,19 @@ Do lokalnej pracy bez Dockera można utworzyć środowisko backendu i uruchomić
 ```bash
 uv venv backend/.venv
 uv pip install --python backend/.venv/bin/python -e 'backend[dev]'
-cd frontend && npm install
+cd frontend && npm ci
 npm run dev
 ```
 
 Tryb lokalny uruchamia API i frontend razem oraz używa pliku SQLite w ignorowanym katalogu `data/`. Compose uruchamia PostgreSQL i pozostaje właściwą konfiguracją do sprawdzania zachowania aplikacji na docelowej bazie.
 
-Po uruchomieniu Compose importer można odpalić na próbce pobranej z BZP:
+Po uruchomieniu Compose można pobrać ogłoszenia z BZP i przełączyć w interfejsie zbiór na „Zaimportowane BZP”:
 
 ```bash
-docker compose exec backend python -m app.import_bzp --input /app/data/bzp.json --city Warszawa
+docker compose exec backend python -m app.import_bzp --city Warszawa --since 2026-09-01
 ```
 
-Bez `--input` importer pobiera z oficjalnego API ogłoszenia o wyniku postępowania (`TenderResultNotice`) dla Warszawy z ostatnich dwóch lat. Można ustawić `--since YYYY-MM-DD`, `--notice-type`, `--page-size` (maks. 500) i `--max-pages` (domyślnie 10). Po osiągnięciu limitu stron importer informuje, że zbiór może być niepełny. Krawędź do wykonawcy powstaje wyłącznie wtedy, gdy API podaje jego nazwę. Dowód prowadzi do zapytania BZP o konkretne ogłoszenie. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
+Bez `--since` importer pobiera z oficjalnego API ogłoszenia o wyniku postępowania (`TenderResultNotice`) dla Warszawy z ostatnich dwóch lat. Można ustawić `--since YYYY-MM-DD`, `--notice-type`, `--page-size` (maks. 500), `--max-pages` (domyślnie 10) albo podać lokalny JSON przez `--input /app/data/bzp.json`. Po osiągnięciu limitu stron importer informuje, że zbiór może być niepełny. Krawędź do wykonawcy powstaje wyłącznie wtedy, gdy API podaje jego nazwę. Dowód prowadzi do zapytania BZP o konkretne ogłoszenie. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
 
 ## Dane i metodologia
 

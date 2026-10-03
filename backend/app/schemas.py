@@ -32,6 +32,9 @@ class EdgeOut(BaseModel):
 class GraphOut(BaseModel):
     nodes: list[NodeOut]
     edges: list[EdgeOut]
+    total_tenders: int
+    offset: int
+    limit: int
     latest_event_at: date | None
     data_mode: str
     notice: str

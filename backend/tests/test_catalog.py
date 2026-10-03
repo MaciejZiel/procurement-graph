@@ -71,6 +71,7 @@ def test_sample_catalog_supports_pages_filters_and_focused_graph():
             since=None,
             until=None,
             max_tenders=6,
+            offset=0,
             dataset="live",
             focus=selected.id,
             order_type=None,
@@ -85,6 +86,7 @@ def test_sample_catalog_supports_pages_filters_and_focused_graph():
             since=None,
             until=None,
             max_tenders=6,
+            offset=0,
             dataset="live",
             focus=None,
             order_type=None,
@@ -100,5 +102,34 @@ def test_sample_catalog_supports_pages_filters_and_focused_graph():
                 for edge in searched.edges
             )
             for node in searched.nodes
+        )
+        first_graph = graph(
+            q=None,
+            kinds=None,
+            since=None,
+            until=None,
+            max_tenders=6,
+            offset=0,
+            dataset="live",
+            focus=None,
+            order_type=None,
+            db=session,
+        )
+        next_graph = graph(
+            q=None,
+            kinds=None,
+            since=None,
+            until=None,
+            max_tenders=6,
+            offset=6,
+            dataset="live",
+            focus=None,
+            order_type=None,
+            db=session,
+        )
+        assert next_graph.total_tenders == 1214
+        assert next_graph.offset == 6
+        assert {node.id for node in next_graph.nodes if node.kind == "procurement"}.isdisjoint(
+            node.id for node in first_graph.nodes if node.kind == "procurement"
         )
     engine.dispose()

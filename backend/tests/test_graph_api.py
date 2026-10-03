@@ -24,6 +24,7 @@ def test_graph_returns_connected_demo_records_and_notice():
             since=None,
             until=None,
             max_tenders=6,
+            offset=0,
             dataset="demo",
             db=session,
         )
@@ -42,6 +43,7 @@ def test_search_limits_graph_to_matching_node_and_one_hop():
             since=None,
             until=None,
             max_tenders=6,
+            offset=0,
             dataset="demo",
             db=session,
         )
@@ -58,6 +60,7 @@ def test_date_window_removes_old_relationships():
             since=date(2026, 1, 1),
             until=None,
             max_tenders=6,
+            offset=0,
             dataset="demo",
             db=session,
         )

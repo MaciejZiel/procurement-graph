@@ -54,6 +54,7 @@ def graph(
     since: date | None = None,
     until: date | None = None,
     max_tenders: int = Query(default=6, ge=1, le=12),
+    offset: int = Query(default=0, ge=0),
     dataset: str = Query(default="demo", pattern="^(demo|live)$"),
     focus: str | None = None,
     order_type: str | None = None,
@@ -115,11 +116,17 @@ def graph(
         and (not order_type or node_by_id[node_id].details.get("order_type") == order_type)
     }
 
-    selected_tenders = sorted(
+    ordered_tenders = sorted(
         candidate_tenders,
-        key=lambda node_id: str(node_by_id[node_id].details.get("published_on") or ""),
+        key=lambda node_id: (
+            str(node_by_id[node_id].details.get("published_on") or ""),
+            node_id,
+        ),
         reverse=True,
-    )[:max_tenders]
+    )
+    selected_tenders = ordered_tenders[
+        0 if focus else offset : (0 if focus else offset) + max_tenders
+    ]
     visible_ids = set(selected_tenders)
     if query and not selected_tenders:
         visible_ids.update(sorted(matching_ids)[:12])
@@ -146,6 +153,9 @@ def graph(
     return GraphOut(
         nodes=[_node_out(node) for node in nodes],
         edges=[_edge_out(edge) for edge in all_edges],
+        total_tenders=len(ordered_tenders),
+        offset=0 if focus else offset,
+        limit=max_tenders,
         latest_event_at=max(
             (edge.occurred_at for edge in all_edges if edge.occurred_at is not None),
             default=None,

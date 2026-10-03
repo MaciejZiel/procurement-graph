@@ -1,0 +1,86 @@
+.catalog-section { margin: 0 clamp(24px, 4.1vw, 68px) 65px; color: #17231d; }
+.catalog-heading { display: flex; justify-content: space-between; align-items: end; gap: 30px; padding: 12px 0 28px; border-bottom: 2px solid #1d3025; }
+.catalog-kicker { color: #51775b; font: 500 11px var(--mono); letter-spacing: .08em; }
+.catalog-heading h2 { margin: 11px 0 8px; font: 700 clamp(28px, 3.1vw, 43px)/1.15 var(--display); letter-spacing: -.06em; }
+.catalog-heading h2 em { color: #4f896b; font: italic 400 1.04em Georgia, serif; }
+.catalog-heading p { max-width: 720px; margin: 0; color: #607066; font-size: 13px; line-height: 1.6; }
+.catalog-count { min-width: 180px; padding: 0 0 2px 20px; border-left: 2px solid #9bb5a1; display: flex; flex-direction: column; gap: 3px; }
+.catalog-count strong { font: 600 45px/.95 var(--display); letter-spacing: -.07em; }
+.catalog-count span { color: #607c67; font: 10px var(--mono); letter-spacing: .08em; }
+
+.catalog-controls { display: flex; align-items: end; gap: 8px; padding: 17px 0; }
+.catalog-summary { margin-right: auto; align-self: center; color: #5d7063; font-size: 12px; }
+.catalog-summary strong { color: #1f3829; font-weight: 700; }
+.catalog-summary span { padding: 0 7px; color: #9baa9e; }
+.catalog-controls label { display: flex; flex-direction: column; gap: 5px; min-width: 150px; color: #657b68; font: 10px var(--mono); letter-spacing: .07em; }
+.catalog-controls select { height: 39px; padding: 0 30px 0 11px; border: 1px solid #c8d2c8; background: #f8f9f3; color: #213b2a; font: 600 12px "DM Sans", sans-serif; cursor: pointer; }
+.catalog-controls select:hover { border-color: #679677; }
+
+.catalog-table { border: 1px solid #cbd4c9; background: #f8f9f3; }
+.catalog-column-head { display: grid; grid-template-columns: 139px minmax(0, 1.8fr) minmax(0, 1fr) minmax(0, 1fr) 85px; gap: 15px; padding: 13px 17px; border-bottom: 1px solid #cbd4c9; background: #e7eee5; color: #57735d; font: 10px var(--mono); letter-spacing: .07em; }
+.catalog-row { display: flex; align-items: stretch; min-height: 104px; border-bottom: 1px solid #dce3d9; transition: background .15s; }
+.catalog-row:last-child { border-bottom: 0; }
+.catalog-row:hover, .catalog-row.catalog-selected { background: #ecf3ea; }
+.catalog-row.catalog-selected { box-shadow: inset 4px 0 #56926a; }
+.catalog-open { flex: 1; min-width: 0; display: grid; grid-template-columns: 139px minmax(0, 1.8fr) minmax(0, 1fr) minmax(0, 1fr); gap: 15px; align-items: center; padding: 16px 17px; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.catalog-open:hover .catalog-title strong { color: #2f7650; }
+.catalog-date, .catalog-title, .catalog-supplier { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
+.catalog-date strong { color: #21402d; font: 600 13px "DM Sans", sans-serif; }
+.catalog-date small { color: #68806f; font-size: 11px; }
+.catalog-title small { color: #68836e; font: 10px var(--mono); overflow-wrap: anywhere; }
+.catalog-title strong { color: #17231d; font-size: 14px; line-height: 1.38; font-weight: 700; transition: color .15s; }
+.catalog-title em { color: #79917d; font: normal 10px var(--mono); line-height: 1.35; }
+.catalog-entity, .catalog-supplier { color: #405b48; font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.catalog-supplier small { color: #879b89; font: 10px var(--mono); }
+.catalog-supplier i { color: #8a988b; font-size: 11px; font-style: normal; }
+.catalog-source { width: 85px; flex: 0 0 85px; display: grid; place-items: center; border-left: 1px solid #dce3d9; color: #32754c; font: 700 12px "DM Sans", sans-serif; text-decoration: none; }
+.catalog-source:hover { background: #dcebd9; }
+.catalog-no-source { color: #8c9a8e; font: 10px var(--mono); }
+.catalog-message { min-height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; padding: 30px; color: #718472; text-align: center; font-size: 13px; }
+.catalog-message strong { color: #294633; font-size: 16px; }
+.catalog-message button { margin-top: 8px; padding: 9px 13px; border: 1px solid #679677; background: transparent; color: #285d3d; cursor: pointer; }
+.catalog-error { color: #815446; }
+.catalog-pagination { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; color: #617468; font: 11px var(--mono); }
+.catalog-pagination > div { display: flex; align-items: center; gap: 12px; }
+.catalog-pagination strong { color: #203b29; font-weight: 500; }
+.catalog-pagination button { padding: 9px 12px; border: 1px solid #c9d5c8; background: #f7faf3; color: #315b3d; font: 600 11px "DM Sans", sans-serif; cursor: pointer; }
+.catalog-pagination button:hover:not(:disabled) { border-color: #739c7d; background: #e9f3e7; }
+.catalog-pagination button:disabled { opacity: .4; cursor: default; }
+
+@media (max-width: 1100px) {
+  .catalog-column-head { display: none; }
+  .catalog-open { grid-template-columns: 120px minmax(0, 1.5fr) minmax(0, 1fr); }
+  .catalog-supplier { grid-column: 2 / -1; flex-direction: row; align-items: baseline; }
+  .catalog-supplier small { margin-left: auto; }
+}
+
+@media (max-width: 700px) {
+  .catalog-section { margin: 0 20px 45px; }
+  .catalog-heading { align-items: start; gap: 12px; }
+  .catalog-heading h2 { font-size: 30px; }
+  .catalog-heading h2 em { display: block; }
+  .catalog-heading p { font-size: 12px; }
+  .catalog-count { min-width: 65px; padding-left: 9px; }
+  .catalog-count strong { font-size: 27px; }
+  .catalog-count span { font-size: 8px; }
+  .catalog-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .catalog-summary { grid-column: 1 / -1; margin-bottom: 3px; }
+  .catalog-controls label { min-width: 0; }
+  .catalog-controls label:last-child { grid-column: 1 / -1; }
+  .catalog-controls select { width: 100%; }
+  .catalog-row { display: grid; grid-template-columns: 1fr auto; min-height: 0; }
+  .catalog-open { display: flex; flex-direction: column; align-items: stretch; gap: 11px; padding: 15px 13px; }
+  .catalog-date { flex-direction: row; align-items: center; gap: 10px; }
+  .catalog-date strong { font-size: 11px; }
+  .catalog-date small { font-size: 10px; }
+  .catalog-title strong { font-size: 13px; }
+  .catalog-entity { font-size: 11px; }
+  .catalog-entity::before { content: "ZAMAWIAJĄCY · "; color: #72947a; font: 9px var(--mono); }
+  .catalog-supplier { display: flex; flex-direction: column; align-items: start; gap: 2px; font-size: 11px; }
+  .catalog-supplier::before { content: "WYKONAWCA"; color: #72947a; font: 9px var(--mono); }
+  .catalog-supplier small { margin: 0; }
+  .catalog-source { width: 50px; flex-basis: 50px; font-size: 10px; }
+  .catalog-pagination { align-items: stretch; gap: 12px; flex-direction: column; }
+  .catalog-pagination > div { justify-content: space-between; gap: 5px; }
+  .catalog-pagination button { padding: 9px; }
+}

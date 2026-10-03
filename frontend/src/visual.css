@@ -51,6 +51,7 @@ h1 em { color: #4f896b; }
 .metric-cell strong small { color: #a5b7a5; font-size: 10px; }
 .metric-total strong { color: #bde6ad; font-size: 28px; }
 .metric-footnote { bottom: 6px; right: 22px; color: #8eaa93; }
+.metric-footnote a { color: #c2e8c7; text-decoration: underline; text-underline-offset: 2px; }
 
 .workbench { grid-template-columns: minmax(0, 1fr) 316px; min-height: 800px; margin-bottom: 60px; border-color: #c9d0c6; background: #f8f8f2; box-shadow: 0 22px 50px rgba(25, 46, 35, .08); }
 .left-rail { grid-column: 1 / -1; display: grid; grid-template-columns: 236px 190px minmax(0, 1fr) 190px; grid-template-rows: auto 1fr; min-height: 174px; padding: 0; border-right: 0; border-bottom: 1px solid #c9d0c6; background: #f6f7f0; }
@@ -94,6 +95,9 @@ h1 em { color: #4f896b; }
 .story-focus p { margin: 5px 0 0; color: #f2f8ed; font-size: 12px; line-height: 1.45; }
 .story-focus button { width: 31px; height: 31px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #648670; background: transparent; color: #d9e9d6; cursor: pointer; }
 .story-focus button:hover { background: #315940; }
+.focus-record { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 23px 0; padding: 10px 13px; background: #254534; border-left: 3px solid #ffc18e; color: #f2f8ed; font-size: 12px; }
+.focus-record button { padding: 5px 8px; border: 1px solid #89a993; background: transparent; color: #d3edcf; font-size: 11px; cursor: pointer; }
+.focus-record button:hover { background: #386249; }
 .mobile-scroll-hint { display: none; }
 .live-dot { background: #bce8b4; box-shadow: 0 0 0 4px #31533b; }
 .graph-canvas { min-height: 610px; margin: 6px 12px 0; background: #142821; }
@@ -111,6 +115,8 @@ h1 em { color: #4f896b; }
 .node-company .node-kind { fill: #ffc18e; }
 .node-index { fill: #789c83; text-anchor: end; font: 11px var(--mono); }
 .node-name { fill: #f5f8f0; text-anchor: start; font: 600 15px "DM Sans", sans-serif; }
+.node-compact .node-name { font-size: 12px; }
+.node-compact .node-index { font-size: 9px; }
 .graph-node:hover .node-card, .graph-node:focus-visible .node-card { fill: #2b4b36; stroke: #bde6ad; stroke-width: 2; }
 .graph-node { animation: node-fade .45s ease both; animation-delay: calc(var(--node-order) * 35ms); }
 @keyframes node-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -142,6 +148,7 @@ h1 em { color: #4f896b; }
 .detail-facts strong { font-size: 12px; }
 .contract-card { padding: 16px; margin: 17px 0; }
 .contract-card > strong { font-size: 25px; }
+.contract-card > strong.result-value { font-size: 19px; letter-spacing: -.035em; }
 .contract-meta { font-size: 11px; }
 .detail-section { padding: 21px 0; }
 .relation-row { padding: 13px 0; }
@@ -207,6 +214,7 @@ h1 em { color: #4f896b; }
   .graph-summary { padding: 14px 16px 0; font-size: 9px; }
   .graph-summary > span:last-child { text-align: right; }
   .story-focus { margin: 12px 16px 0; }
+  .focus-record { margin: 12px 16px 0; }
   .mobile-scroll-hint { display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 8px 16px 0; color: #bde6ad; font: 10px var(--mono); }
   .mobile-scroll-hint span { font-size: 18px; line-height: 1; }
   .graph-canvas { min-height: 480px; margin: 8px 0 0; overflow-x: auto; overflow-y: hidden; }

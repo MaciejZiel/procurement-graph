@@ -38,3 +38,34 @@ export interface Story {
   node_ids: string[];
   minutes: number;
 }
+
+export interface EntityRef {
+  id: string;
+  label: string;
+  city: string;
+}
+
+export interface ProcurementItem {
+  id: string;
+  title: string;
+  reference: string | null;
+  published_on: string | null;
+  buyer: EntityRef | null;
+  suppliers: EntityRef[];
+  order_type: string | null;
+  cpv_code: string | null;
+  procedure_result: string | null;
+  source_url: string | null;
+  is_demo: boolean;
+}
+
+export interface ProcurementPage {
+  items: ProcurementItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
+  buyers_count: number;
+  suppliers_count: number;
+  latest_event_at: string | null;
+}

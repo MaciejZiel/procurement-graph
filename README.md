@@ -10,7 +10,8 @@ Po pierwszym uruchomieniu domyślnie otwiera się zbiór BZP: do repozytorium do
 
 ## Co działa
 
-- interaktywny graf relacji z panelem szczegółów i otwieraniem wybranego postępowania z katalogu,
+- interaktywny atlas relacji: przechodzenie między wszystkimi postępowaniami, losowy widok, powiększanie, przesuwanie i pełny ekran,
+- podświetlanie ścieżki zamawiający → postępowanie → wykonawca, z panelem szczegółów i źródłem,
 - katalog wszystkich zaimportowanych postępowań z wyszukiwaniem, filtrowaniem, sortowaniem i stronicowaniem,
 - wyszukiwanie po tytule, numerze, CPV, zamawiającym i wykonawcy,
 - filtry po rodzaju węzła i okresie,

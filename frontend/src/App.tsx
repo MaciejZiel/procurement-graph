@@ -210,6 +210,7 @@ function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
   const searchInput = useRef<HTMLInputElement>(null);
+  const requestVersion = useRef(0);
 
   useEffect(() => {
     function onSearchShortcut(event: KeyboardEvent) {
@@ -230,6 +231,7 @@ function App() {
   }, []);
 
   async function loadGraph(nextQuery = query, nextKinds = visibleKinds, nextDateWindow = dateWindow, nextDataset = dataset) {
+    const version = ++requestVersion.current;
     setLoading(true);
     setError(null);
     try {
@@ -242,12 +244,13 @@ function App() {
         since,
         until: nextDateWindow === "all" ? undefined : dateInputValue(today),
       });
+      if (version !== requestVersion.current) return;
       setData(next);
       setSelectedId((current) => next.nodes.some((node) => node.id === current) ? current : next.nodes[0]?.id ?? null);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Nie udało się pobrać danych.");
+      if (version === requestVersion.current) setError(caught instanceof Error ? caught.message : "Nie udało się pobrać danych.");
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
   }
 
@@ -265,6 +268,9 @@ function App() {
   }, []);
 
   useEffect(() => {
+    requestVersion.current += 1;
+    setLoading(true);
+    setError(null);
     const timer = window.setTimeout(() => void loadGraph(query, visibleKinds, dateWindow, dataset), 180);
     return () => window.clearTimeout(timer);
   }, [query, visibleKinds, dateWindow, dataset]);
@@ -319,6 +325,11 @@ function App() {
   }
 
   function openStory(story: Story) {
+    if (dataset !== "demo") {
+      requestVersion.current += 1;
+      setData(null);
+      setLoading(true);
+    }
     setDataset("demo");
     setActiveStory(story);
     setSelectedId(story.node_ids[0] ?? null);
@@ -424,7 +435,7 @@ function App() {
                 <h2>{activeStory?.title ?? "Przepływ zamówień"}</h2>
               </div>
               <div className="toolbar-actions">
-                <label className="date-select data-select"><span>ZBIÓR</span><select value={dataset} onChange={(event) => { setDataset(event.target.value as "demo" | "live"); setActiveStory(null); }} aria-label="Wybierz dane demonstracyjne lub BZP">
+                <label className="date-select data-select"><span>ZBIÓR</span><select value={dataset} onChange={(event) => { requestVersion.current += 1; setData(null); setLoading(true); setDataset(event.target.value as "demo" | "live"); setActiveStory(null); setMobileDetailsOpen(false); }} aria-label="Wybierz dane demonstracyjne lub BZP">
                   <option value="demo">Scenariusz demo</option>
                   <option value="live">Zaimportowane BZP</option>
                 </select></label>

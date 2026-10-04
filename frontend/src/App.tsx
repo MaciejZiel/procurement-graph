@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { fetchGraph, fetchProcurements, fetchStories } from "./api";
 import Catalog from "./Catalog";
+import CaseSpotlight from "./CaseSpotlight";
 import type { GraphData, GraphNode, NodeKind, ProcurementItem, ProcurementPage, Story } from "./types";
 
 const kinds: { id: NodeKind; label: string; color: string }[] = [
@@ -369,6 +370,7 @@ function App() {
   });
   const [mapExpanded, setMapExpanded] = useState(false);
   const searchInput = useRef<HTMLInputElement>(null);
+  const mapSearchInput = useRef<HTMLInputElement>(null);
   const requestVersion = useRef(0);
   const catalogRequestVersion = useRef(0);
 
@@ -376,10 +378,10 @@ function App() {
     function onSearchShortcut(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        searchInput.current?.focus();
+        (mapExpanded ? mapSearchInput : searchInput).current?.focus();
       }
-      if (event.key === "Escape" && document.activeElement === searchInput.current) {
-        searchInput.current?.blur();
+      if (event.key === "Escape" && (document.activeElement === searchInput.current || document.activeElement === mapSearchInput.current)) {
+        (document.activeElement as HTMLElement).blur();
       }
       if (event.key === "Escape") {
         setMobileDetailsOpen(false);
@@ -389,7 +391,7 @@ function App() {
     }
     window.addEventListener("keydown", onSearchShortcut);
     return () => window.removeEventListener("keydown", onSearchShortcut);
-  }, []);
+  }, [mapExpanded]);
 
   useEffect(() => {
     document.body.style.overflow = mapExpanded ? "hidden" : "";
@@ -412,7 +414,13 @@ function App() {
       });
       if (version !== requestVersion.current) return;
       setData(next);
-      setSelectedId((current) => next.nodes.some((node) => node.id === current) ? current : next.nodes.find((node) => node.kind === "procurement")?.id ?? next.nodes[0]?.id ?? null);
+      setSelectedId((current) => {
+        if (next.nodes.some((node) => node.id === current)) return current;
+        const featured = next.nodes
+          .filter((node) => node.kind === "procurement" && next.edges.some((edge) => edge.source_id === node.id && next.nodes.some((target) => target.id === edge.target_id && target.kind === "company")))
+          .sort((a, b) => a.label.length - b.label.length)[0];
+        return featured?.id ?? next.nodes.find((node) => node.kind === "procurement")?.id ?? next.nodes[0]?.id ?? null;
+      });
     } catch (caught) {
       if (version === requestVersion.current) setError(caught instanceof Error ? caught.message : "Nie udało się pobrać danych.");
     } finally {
@@ -467,9 +475,6 @@ function App() {
 
   const selectedNode = data?.nodes.find((node) => node.id === selectedId) ?? null;
   const relatedEdges = data?.edges.filter((edge) => edge.source_id === selectedId || edge.target_id === selectedId) ?? [];
-  const institutions = data?.nodes.filter((node) => node.kind === "institution").length ?? 0;
-  const companies = data?.nodes.filter((node) => node.kind === "company").length ?? 0;
-  const relationCount = data?.edges.length ?? 0;
   function toggleKind(kind: NodeKind) {
     setVisibleKinds((current) => {
       if (current.includes(kind) && current.length === 1) return current;
@@ -562,8 +567,9 @@ function App() {
     setGraphOffset(0);
     setSelectedId(item.id);
     setActiveStory(null);
-    setMobileDetailsOpen(window.innerWidth <= 1060);
-    document.querySelector(".graph-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMobileDetailsOpen(false);
+    setMapExpanded(false);
+    document.querySelector("#case")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function resetCatalogFilters() {
@@ -584,14 +590,14 @@ function App() {
           <span className="brand-wordmark">JAWNY<span>ŚLAD</span></span>
         </a>
         <nav className="top-nav" aria-label="Nawigacja główna">
-          <a className="nav-active" href="#explore" onClick={() => setMobileNavOpen(false)}>Eksploruj</a>
+          <a className="nav-active" href="#case" onClick={() => setMobileNavOpen(false)}>Przykład</a>
           <a href="#catalog" onClick={() => setMobileNavOpen(false)}>Rejestr</a>
-          <a href="#stories" onClick={() => setMobileNavOpen(false)}>Ścieżki</a>
-          <a href="#methodology" onClick={() => setMobileNavOpen(false)}>Metodologia</a>
+          <button onClick={() => { setMapExpanded(true); setMobileNavOpen(false); }}>Mapa powiązań</button>
+          <a href="#sources" onClick={() => setMobileNavOpen(false)}>O danych</a>
         </nav>
         <div className="top-meta">
           <span className="data-status"><i /> {dataset === "demo" ? "DEMO / WARSZAWA" : "BZP / WARSZAWA"}</span>
-          <a className="github-link" href="#methodology">O projekcie <Symbol name="arrow" /></a>
+          <a className="github-link" href="#sources">O projekcie <Symbol name="arrow" /></a>
           <button className="mobile-menu" aria-label="Otwórz menu" aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen((open) => !open)}><Symbol name="menu" /></button>
         </div>
       </header>
@@ -599,41 +605,29 @@ function App() {
       <main id="top">
         <section className="intro-section" id="explore">
           <div className="intro-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> PRACOWNIA DANYCH PUBLICZNYCH <span className="eyebrow-year">VOL. 01 / 2026</span></div>
-            <h1>Każdy przetarg<br />zostawia <em>ślad.</em></h1>
-            <p>Połącz instytucje, postępowania i wykonawców. Potem sprawdź, co naprawdę mówią źródła.</p>
+            <div className="eyebrow"><span className="eyebrow-line" /> ZAMÓWIENIA PUBLICZNE / WARSZAWA</div>
+            <h1>Od ogłoszenia<br />do <em>wykonawcy.</em></h1>
+            <p>Sprawdź, kto zamawia, czego dotyczy postępowanie i kogo wskazano w wyniku. Przy danych BZP możesz otworzyć oryginalne ogłoszenie.</p>
             <div className="intro-actions">
-              <button onClick={() => setMapExpanded(true)}>Otwórz atlas powiązań <span aria-hidden="true">↗</span></button>
-              <a href="#catalog">Zobacz rejestr{catalogData ? ` · ${catalogData.total.toLocaleString("pl-PL")}` : ""} <span aria-hidden="true">→</span></a>
+              <a className="intro-primary" href="#case">Zobacz jedną sprawę <span aria-hidden="true">↓</span></a>
+              <a href="#catalog">Przeszukaj rejestr <span aria-hidden="true">→</span></a>
             </div>
           </div>
           <div className="intro-side-note">
-            <span>W TEJ PRACOWNI</span>
-            <p>Nie zgadujemy.<br />Pokazujemy, skąd<br />pochodzi każdy wniosek.</p>
-            <a href="#methodology">Jak czytać dane <Symbol name="arrow" /></a>
+            <span>JAK CZYTAĆ?</span>
+            <p>Jedna sprawa.<br />Trzy pytania.<br />Jedno źródło.</p>
+            <a href="#sources">Skąd są dane <Symbol name="arrow" /></a>
           </div>
         </section>
 
-        <section className={`demo-ribbon ${dataset === "live" ? "source-ribbon" : ""}`} aria-label="Informacja o danych">
-          <div className="ribbon-stamp">{dataset === "demo" ? "DEMO" : "BZP"}</div>
-          <p>{dataset === "demo" ? <><strong>Scenariusz demonstracyjny.</strong> Widoczne tu podmioty i zamówienia są fikcyjne. Nie opisują prawdziwych relacji.</> : <><strong>Dane źródłowe BZP.</strong> Sprawdź każde połączenie w opublikowanym ogłoszeniu.</>}</p>
-          <span className="ribbon-location">WARSZAWA <b>·</b> POLSKA</span>
-        </section>
+        <CaseSpotlight data={data} selectedNode={selectedNode} loading={loading} error={error} dataset={dataset} onOpenMap={() => setMapExpanded(true)} onRetry={() => void loadGraph()} />
 
-        <section className="metrics-row" aria-label="Statystyki widoku">
-          <div className="metric-cell"><span>POSTĘPOWANIA W KATALOGU</span><strong>{catalogData?.total.toLocaleString("pl-PL") ?? "—"}</strong></div>
-          <div className="metric-cell"><span>ZAMAWIAJĄCY NA MAPIE</span><strong>{institutions.toString().padStart(2, "0")}</strong></div>
-          <div className="metric-cell"><span>WYKONAWCY NA MAPIE</span><strong>{companies.toString().padStart(2, "0")}</strong></div>
-          <div className="metric-cell metric-total"><span>RELACJE NA MAPIE</span><strong>{relationCount.toString().padStart(2, "0")}</strong></div>
-          <div className="metric-footnote">Mapa pokazuje wycinek · <a href="#catalog">przejdź do pełnego rejestru ↗</a></div>
-        </section>
-
-        <section className={`workbench ${mapExpanded ? "map-expanded" : ""}`} aria-label="Eksplorator powiązań">
+        {mapExpanded && <section className="workbench map-expanded" aria-label="Eksplorator powiązań">
           <aside className="left-rail">
             <div className="rail-heading"><span>01 / WARSZAWA</span><span>TYLKO ODCZYT</span></div>
             <div className="search-field">
               <Symbol name="search" />
-              <input ref={searchInput} name="search" value={query} onChange={(event) => { setQuery(event.target.value); setCatalogPage(1); setGraphOffset(0); setFocusTender(null); }} placeholder="Szukaj w danych" aria-label="Szukaj instytucji, firmy lub postępowania" />
+              <input ref={mapSearchInput} name="search" value={query} onChange={(event) => { setQuery(event.target.value); setCatalogPage(1); setGraphOffset(0); setFocusTender(null); }} placeholder="Szukaj w danych" aria-label="Szukaj instytucji, firmy lub postępowania" />
               {query && <button aria-label="Wyczyść wyszukiwanie" onClick={() => { setQuery(""); setCatalogPage(1); }}><Symbol name="close" /></button>}
               {!query && <kbd>⌘ / Ctrl K</kbd>}
             </div>
@@ -703,7 +697,7 @@ function App() {
             <div className="mobile-scroll-hint" aria-hidden="true">Przesuń mapę w bok <span>→</span></div>
             {loading && <div className="loading-line"><i /> Ładowanie grafu…</div>}
             {error && <div className="api-error" role="alert"><strong>Nie mogę połączyć się z API.</strong><span>{error}</span><button onClick={() => void loadGraph()}>Spróbuj ponownie</button></div>}
-            {data && <GraphCanvas data={data} selectedId={selectedId} activeStory={activeStory} onSelect={selectNode} expanded={mapExpanded} onExpand={() => setMapExpanded((expanded) => !expanded)} />}
+            {data && <GraphCanvas data={data} selectedId={selectedId} activeStory={activeStory} onSelect={selectNode} expanded={mapExpanded} onExpand={() => setMapExpanded(false)} />}
             {data && <EvidenceRoute data={data} selectedNode={selectedNode} onSelect={selectNode} />}
             <div className="graph-legend">
               <div>{kinds.map((kind) => <span key={kind.id}><i style={{ "--dot-color": kind.color } as CSSProperties} />{kind.label}</span>)}</div>
@@ -776,12 +770,15 @@ function App() {
             </>}
             <div className="detail-footer"><span>JAWNY ŚLAD / 2026</span><span>METODOLOGIA ↗</span></div>
           </aside>
-        </section>
+        </section>}
 
         <Catalog
           data={catalogData}
           loading={catalogLoading}
           error={catalogError}
+          query={query}
+          inputRef={searchInput}
+          onQuery={(value) => { setQuery(value); setCatalogPage(1); setGraphOffset(0); setFocusTender(null); }}
           dataset={dataset}
           selectedId={focusTender}
           orderType={catalogOrderType}
@@ -794,6 +791,12 @@ function App() {
           onSelect={selectProcurement}
           onReset={resetCatalogFilters}
         />
+
+        <section className="source-note" id="sources" aria-label="O danych">
+          <div><span>O DANYCH</span><h2>Co właściwie pokazujemy?</h2></div>
+          <p>{dataset === "demo" ? "Scenariusz demonstracyjny zawiera fikcyjne podmioty i zamówienia. Nie opisuje prawdziwych relacji. Wybierz zbiór BZP, aby przeglądać ogłoszenia źródłowe." : "Rejestr zawiera ogłoszenia o wynikach postępowań warszawskich zamawiających z Biuletynu Zamówień Publicznych. Dołączona migawka obejmuje 1 września – 3 października 2026 r. Połączenie na mapie oznacza relację opisaną w ogłoszeniu. Brak kwoty lub wykonawcy oznacza brak tej informacji w dostępnych danych, a nie brak zdarzenia."}</p>
+          <a href="https://ezamowienia.gov.pl/pl/integracja/" target="_blank" rel="noreferrer">Źródło danych BZP ↗</a>
+        </section>
 
         <footer className="site-footer">
           <a className="footer-brand" href="#top">JAWNY ŚLAD</a>

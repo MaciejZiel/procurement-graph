@@ -297,7 +297,7 @@ function GraphCanvas({
         </div>
       )}
       <div className="graph-axis" aria-hidden="true">
-        <span>→</span><small>{viewport.width < 1100 ? "drag to pan" : "select a node to trace a relationship"}</small><span>↗</span>
+        <span>→</span><small>{viewport.width < 1100 ? t("drag to pan", language) : t("select a node to trace a relationship", language)}</small><span>↗</span>
       </div>
     </div>
   );

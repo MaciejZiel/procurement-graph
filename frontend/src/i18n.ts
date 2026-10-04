@@ -197,7 +197,7 @@ const polish: Record<string, string> = {
   "SELECT A NODE": "WYBIERZ WĘZEŁ",
   "Select a node to inspect its details and evidence.": "Kliknij węzeł, aby zobaczyć szczegóły i dowody relacji.",
   "SELECT A NODE TO SEE DETAILS": "KLIKNIJ WĘZEŁ, ABY ZOBACZYĆ SZCZEGÓŁY",
-  "select a node to trace a relationship": "kliknij węzeł, aby śledzić relację",
+  "select a node to trace a relationship": "wybierz węzeł, aby prześledzić powiązanie",
   "Select a related procurement to see its source.": "Źródło pojawi się po wybraniu powiązanego postępowania.",
   "Select an item on the map to see its history and sources.": "Wybierz element na mapie, aby zobaczyć jego historię i źródła.",
   "SELECTED CASE": "WYBRANA SPRAWA",

@@ -1,39 +1,34 @@
-# Jawny Ślad
+# Procurement Graph
 
-**Kto zamawia, kogo wskazano i gdzie jest źródło?**
+**Trace a public procurement notice from buyer to supplier.**
 
-Jawny Ślad pozwala przeczytać jedno ogłoszenie o wyniku w prosty sposób: pokazuje zamawiającego, przedmiot, wskazanego wykonawcę i wynik, a następnie prowadzi do danych BZP. Rejestr służy do wyboru kolejnej sprawy. Mapa powiązań jest dodatkowym widokiem do eksploracji relacji.
+Procurement Graph turns a result notice into a readable case: what was bought, who bought it, which supplier was named, what outcome was reported, and where the original notice can be checked. The registry lets you find another case. The relationship map is an optional view for exploring connected records.
 
-![Przykładowe postępowanie w aplikacji](docs/dashboard.jpg)
+![A procurement case in Procurement Graph](docs/dashboard.jpg)
 
-Po pierwszym uruchomieniu domyślnie otwiera się zbiór BZP: do repozytorium dołączono 1214 prawdziwych ogłoszeń warszawskich zamawiających z okresu 1 września – 3 października 2026 r. Dane fikcyjne są dostępne oddzielnie jako „Scenariusz demo”. Dołączony zbiór jest migawką, więc do pracy na aktualnych danych użyj importera.
+The app opens in Polish and includes an English language switch. It uses a bundled snapshot of 1,214 real result notices from Warsaw buyers, published between September 1 and October 3, 2026. This is a fixed snapshot, not a live feed. A separate demo dataset contains fictional records. Names and notice titles from the Polish source remain in their original language.
 
-## Co działa
+## Features
 
-- czytelna karta jednego postępowania z odpowiedziami i linkiem do źródła,
-- wyszukiwarka rejestru, która otwiera wybraną sprawę w tej karcie,
-- interaktywny atlas relacji: przechodzenie między wszystkimi postępowaniami, losowy widok, powiększanie, przesuwanie i pełny ekran,
-- podświetlanie ścieżki zamawiający → postępowanie → wykonawca, z panelem szczegółów i źródłem,
-- katalog wszystkich zaimportowanych postępowań z wyszukiwaniem, filtrowaniem, sortowaniem i stronicowaniem,
-- wyszukiwanie po tytule, numerze, CPV, zamawiającym i wykonawcy,
-- filtry po rodzaju węzła i okresie,
-- profile podmiotów, źródła oraz gotowe ścieżki demonstracyjne,
-- API FastAPI i warstwa PostgreSQL,
-- importer BZP z filtrem lokalizacji, wieloma wykonawcami w jednym ogłoszeniu i ponawialnym upsertem,
-- kontenerowy start całego środowiska.
+- A case view with buyer, supplier, reported outcome, and a link to the original BZP notice.
+- A searchable, sortable registry with filters and pagination.
+- A relationship map showing buyers, procurements, and suppliers, with source evidence for each connection.
+- Guided paths through fictional demo records.
+- A read-only FastAPI backend and PostgreSQL storage in Docker Compose.
+- A BZP importer that supports city and date filters, multiple suppliers per notice, and repeatable imports.
 
-## Uruchomienie
+## Run locally
 
-Wymagany jest Docker z Compose.
+Docker and Compose are required for the container setup:
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Frontend będzie dostępny pod `http://localhost:5173`, a dokumentacja API pod `http://localhost:8000/docs`.
+The frontend is available at `http://localhost:5173`; API documentation is at `http://localhost:8000/docs`.
 
-Do lokalnej pracy bez Dockera można utworzyć środowisko backendu i uruchomić oba serwery razem:
+For local development without Docker:
 
 ```bash
 uv venv backend/.venv
@@ -42,43 +37,28 @@ cd frontend && npm ci
 npm run dev
 ```
 
-Tryb lokalny uruchamia API i frontend razem oraz używa pliku SQLite w ignorowanym katalogu `data/`. Compose uruchamia PostgreSQL i pozostaje właściwą konfiguracją do sprawdzania zachowania aplikacji na docelowej bazie.
+The local development command starts both servers and uses SQLite in the ignored `data/` directory. Docker Compose uses PostgreSQL.
 
-Po uruchomieniu Compose można pobrać więcej ogłoszeń z BZP:
+To import more BZP notices after starting Compose:
 
 ```bash
 docker compose exec backend python -m app.import_bzp --city Warszawa --since 2026-09-01
 ```
 
-Bez `--since` importer pobiera z oficjalnego API ogłoszenia o wyniku postępowania (`TenderResultNotice`) dla Warszawy z ostatnich dwóch lat. Można ustawić `--since YYYY-MM-DD`, `--notice-type`, `--page-size` (maks. 500), `--max-pages` (domyślnie 10) albo podać lokalny JSON przez `--input /app/data/bzp.json`. Po osiągnięciu limitu stron importer informuje, że zbiór może być niepełny. Krawędź do wykonawcy powstaje wyłącznie wtedy, gdy API podaje jego nazwę; jedno postępowanie może mieć wielu wykonawców. Dowód prowadzi do zapytania BZP o konkretne ogłoszenie. Dane demonstracyjne i źródłowe są dostępne osobno w API (`dataset=demo` lub `dataset=live`).
+Without `--since`, the importer requests Warsaw result notices (`TenderResultNotice`) from the official API for the last two years. It also accepts `--notice-type`, `--page-size` (up to 500), `--max-pages` (default 10), or a local JSON file via `--input /app/data/bzp.json`. The importer reports when it reaches the page limit. A supplier connection is created only when the source names that supplier. The demo and BZP datasets are separate (`dataset=demo` and `dataset=live`).
 
-## Dane i metodologia
+## Data and interpretation
 
-Źródłem ogłoszeń jest bezpłatny webserwis BZP platformy e‑Zamówienia: <https://ezamowienia.gov.pl/mo-board/api/v1/notice>. Obecny zakres obejmuje ogłoszenia warszawskich instytucji; wykonawcy mogą pochodzić z całej Polski. Dane z TED oraz automatyczne wzbogacanie profili z KRS są planowane jako kolejne źródła.
+The source is the [BZP service of Poland's e-Zamówienia platform](https://ezamowienia.gov.pl/pl/integracja/). The current scope covers notices from Warsaw buyers; suppliers may be based anywhere. A map connection records a relationship reported in a notice. A missing amount or supplier means the available data does not provide that field. The map does not assess wrongdoing or legal compliance.
 
-Źródło: [materiały integracyjne e‑Zamówień](https://ezamowienia.gov.pl/pl/integracja/), w tym specyfikacja OpenAPI BZP. Mapowanie sprawdzono z rzeczywistą odpowiedzią API; przed uruchomieniem produkcyjnym warto ponownie zweryfikować format dostawcy.
+The importer uses the [public BZP endpoint](https://ezamowienia.gov.pl/mo-board/api/v1/notice). Its mapping was checked against a real API response; the provider format should be checked again before production use.
 
-### Zasady prezentacji
+## Stack
 
-- Fakt, obliczona statystyka i możliwe dopasowanie podmiotu są oznaczane osobno.
-- Każda relacja zawiera typ, źródło i datę.
-- Brak danych nie jest przedstawiany jako brak zdarzenia.
-- Sygnały analityczne opisują wzorzec i nie stanowią oceny prawnej ani zarzutu.
-
-## Stos technologiczny
-
-- **Frontend:** React, TypeScript, Vite, własny graf SVG.
+- **Frontend:** React, TypeScript, Vite, custom SVG graph.
 - **Backend:** Python, FastAPI, SQLAlchemy.
-- **Baza:** PostgreSQL.
-- **Lokalne środowisko:** Docker Compose.
+- **Database:** PostgreSQL in Compose; SQLite for local development.
 
-## Plan projektu
+## License
 
-1. Szkielet repozytorium i lokalne środowisko.
-2. Schemat danych, dane demonstracyjne i API.
-3. Widok grafu, profile oraz ścieżki demonstracyjne.
-4. Import źródeł, dokumentacja metodologii i przygotowanie wdrożenia.
-
-## Licencja
-
-Projekt portfolio. Dane zewnętrzne podlegają warunkom ich źródeł.
+Portfolio project. External data remains subject to its source terms.

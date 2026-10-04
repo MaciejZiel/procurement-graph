@@ -1,18 +1,21 @@
 import type { GraphData, GraphNode } from "./types";
+import { t, type Language } from "./i18n";
 
-function dateLabel(value: unknown): string {
-  if (typeof value !== "string" || !value) return "Nie podano daty";
-  return new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", year: "numeric" }).format(new Date(value));
+function dateLabel(value: unknown, language: Language): string {
+  if (typeof value !== "string" || !value) return t("Date unavailable", language);
+  return new Intl.DateTimeFormat(language === "pl" ? "pl-PL" : "en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(value));
 }
 
-function resultLabel(value: unknown): string {
-  if (value === "zawarcieUmowy") return "Zawarto umowę";
-  if (typeof value === "string" && value.toLowerCase().includes("uniewa")) return "Postępowanie unieważniono";
-  return value ? "Wynik opisany w ogłoszeniu" : "Nie podano wyniku";
+function resultLabel(value: unknown, language: Language): string {
+  if (value === "zawarcieUmowy") return t("Contract awarded", language);
+  if (value === "Awarded") return t("Awarded", language);
+  if (typeof value === "string" && value.toLowerCase().includes("uniewa")) return t("Procurement cancelled", language);
+  return value ? t("Outcome reported in notice", language) : t("Outcome not provided", language);
 }
 
-export default function CaseSpotlight({ data, selectedNode, loading, error, dataset, onOpenMap, onRetry }: {
+export default function CaseSpotlight({ data, language, selectedNode, loading, error, dataset, onOpenMap, onRetry }: {
   data: GraphData | null;
+  language: Language;
   selectedNode: GraphNode | null;
   loading: boolean;
   error: string | null;
@@ -33,22 +36,22 @@ export default function CaseSpotlight({ data, selectedNode, loading, error, data
     .filter((node): node is GraphNode => Boolean(node)) ?? [];
   const source = typeof tender?.details.source_url === "string" ? tender.details.source_url : buyerEdge?.evidence_url;
 
-  return <section className="case-spotlight" id="case" aria-label="Wybrane postępowanie" aria-live="polite" aria-busy={loading}>
-    <div className="case-heading"><span>01 / WYBRANE OGŁOSZENIE</span><a href="#catalog">Wybierz inne z rejestru ↓</a></div>
-    {error && !data ? <div className="case-placeholder">Nie udało się pobrać sprawy. <button onClick={onRetry}>Spróbuj ponownie</button></div> : loading && !data ? <div className="case-placeholder">Pobieram postępowanie i jego powiązania…</div> : tender ? <>
+  return <section className="case-spotlight" id="case" aria-label={t("Selected procurement", language)} aria-live="polite" aria-busy={loading}>
+    <div className="case-heading"><span>{t("01 / SELECTED NOTICE", language)}</span><a href="#catalog">{t("Choose another from the registry", language)} ↓</a></div>
+    {error && !data ? <div className="case-placeholder">{t("Could not load this case.", language)} <button onClick={onRetry}>{t("Try again", language)}</button></div> : loading && !data ? <div className="case-placeholder">{t("Loading the procurement and its relationships…", language)}</div> : tender ? <>
       <div className="case-lead">
-        <div><span className="case-eyebrow">{dataset === "demo" ? "PRZYKŁAD DEMONSTRACYJNY" : "OGŁOSZENIE O WYNIKU · BZP"}</span><h2>{tender.label}</h2></div>
-        <div className="case-reference"><span>OGŁOSZONO</span><strong>{dateLabel(tender.details.published_on)}</strong>{tender.details.reference && <small>{tender.details.reference}</small>}</div>
+        <div><span className="case-eyebrow">{dataset === "demo" ? t("DEMO EXAMPLE", language) : t("RESULT NOTICE · BZP", language)}</span><h2>{tender.label}</h2></div>
+        <div className="case-reference"><span>{t("PUBLISHED", language)}</span><strong>{dateLabel(tender.details.published_on, language)}</strong>{tender.details.reference && <small>{tender.details.reference}</small>}</div>
       </div>
       <div className="case-answers">
-        <div className="case-answer"><span>01 / KTO ZAMAWIA?</span><strong>{buyer?.label ?? "Nie podano zamawiającego"}</strong><small>{buyer?.city || ""}</small></div>
-        <div className="case-answer"><span>02 / KOGO WSKAZANO?</span><strong>{suppliers[0]?.label ?? "Nie wskazano wykonawcy"}</strong><small>{suppliers.length > 1 ? `oraz ${suppliers.length - 1} innych wykonawców` : suppliers.length ? "Wykonawca z ogłoszenia" : "Brak nazwy w dostępnych danych"}</small></div>
-        <div className="case-answer case-outcome"><span>03 / JAKI WYNIK?</span><strong>{resultLabel(tender.details.procedure_result)}</strong><small>Sprawdź szczegóły w źródle</small></div>
+        <div className="case-answer"><span>{t("01 / WHO IS BUYING?", language)}</span><strong>{buyer?.label ?? t("Buyer not provided", language)}</strong><small>{t(buyer?.city || "", language)}</small></div>
+        <div className="case-answer"><span>{t("02 / WHICH SUPPLIER?", language)}</span><strong>{suppliers[0]?.label ?? t("Supplier not named", language)}</strong><small>{suppliers.length > 1 ? `${t("and", language)} ${suppliers.length - 1} ${t("other suppliers", language)}` : suppliers.length ? t("Supplier named in notice", language) : t("No name in available data", language)}</small></div>
+        <div className="case-answer case-outcome"><span>{t("03 / WHAT OUTCOME?", language)}</span><strong>{resultLabel(tender.details.procedure_result ?? tender.details.status, language)}</strong><small>{dataset === "demo" ? t("Fictional demo result", language) : t("Check details in the source", language)}</small></div>
       </div>
       <div className="case-actions">
-        {source ? <a className="case-source" href={source} target="_blank" rel="noreferrer">Otwórz ogłoszenie źródłowe <span>↗</span></a> : <span className="case-no-source">{dataset === "demo" ? "Scenariusz demonstracyjny · bez dokumentu źródłowego" : "Brak adresu ogłoszenia w dostępnych danych"}</span>}
-        <button onClick={onOpenMap}>Pokaż powiązania na mapie <span>→</span></button>
+        {source ? <a className="case-source" href={source} target="_blank" rel="noreferrer">{t("Open original notice", language)} <span>↗</span></a> : <span className="case-no-source">{dataset === "demo" ? t("Demo scenario · no source document", language) : t("Source URL unavailable", language)}</span>}
+        <button onClick={onOpenMap}>{t("Explore on the map", language)} <span>→</span></button>
       </div>
-    </> : <div className="case-placeholder">Nie znaleziono postępowań dla tego wyszukiwania. Zmień zapytanie w rejestrze poniżej.</div>}
+    </> : <div className="case-placeholder">{t("No procurements match this search. Try another query in the registry below.", language)}</div>}
   </section>;
 }

@@ -1,1 +1,1 @@
-"""Jawny Ślad API."""
+"""Procurement Graph API."""

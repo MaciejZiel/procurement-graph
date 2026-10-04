@@ -15,14 +15,40 @@ from .schemas import EdgeOut, GraphOut, HealthOut, NodeOut, ProcurementPageOut, 
 router = APIRouter(prefix="/api")
 
 
+def _display_text(value: str) -> str:
+    """Translate our metadata while preserving names copied from source notices."""
+    for original, translated in (
+        ("Warszawa · dane BZP", "Warsaw · BZP data"),
+        ("Warszawa · scenariusz demonstracyjny", "Warsaw · demo scenario"),
+        ("Zamawiający · dane źródłowe", "Buyer · source data"),
+        ("Postępowanie · dane BZP", "Procurement · BZP data"),
+        ("Wykonawca wskazany w danych BZP", "Supplier named in BZP data"),
+        ("Ogłoszenie o wyniku postępowania", "Procurement result notice"),
+        ("Ogłoszenie BZP", "BZP notice"),
+        ("Fikcyjny rekord demonstracyjny", "Fictional demo record"),
+        ("wybrano wykonawcę", "selected supplier"),
+        ("wskazano wykonawcę", "named supplier"),
+        ("ogłosiła", "published"),
+        ("Nie podano", "Not provided"),
+        ("Warszawa", "Warsaw"),
+        ("Udzielone", "Awarded"),
+    ):
+        value = value.replace(original, translated)
+    return value
+
+
 def _node_out(node: GraphNode) -> NodeOut:
+    details = dict(node.details or {})
+    for field in ("status", "sector"):
+        if isinstance(details.get(field), str):
+            details[field] = _display_text(details[field])
     return NodeOut(
         id=node.id,
         kind=node.kind,
         label=node.label,
-        subtitle=node.subtitle,
-        city=node.city,
-        details=node.details,
+        subtitle=_display_text(node.subtitle),
+        city=_display_text(node.city),
+        details=details,
         is_demo=node.is_demo,
     )
 
@@ -32,8 +58,8 @@ def _edge_out(edge: GraphEdge) -> EdgeOut:
         id=edge.id,
         source_id=edge.source_id,
         target_id=edge.target_id,
-        relationship_type=edge.relationship_type,
-        evidence_label=edge.evidence_label,
+        relationship_type=_display_text(edge.relationship_type),
+        evidence_label=_display_text(edge.evidence_label),
         evidence_url=edge.evidence_url,
         occurred_at=edge.occurred_at,
         amount_pln=edge.amount_pln,
@@ -65,7 +91,7 @@ def graph(
     all_edges = db.scalars(select(GraphEdge).where(GraphEdge.is_demo.is_(is_demo))).all()
     node_by_id = {node.id: node for node in all_nodes}
     if focus and (focus not in node_by_id or node_by_id[focus].kind != "procurement"):
-        raise HTTPException(status_code=404, detail="Nie znaleziono postępowania")
+        raise HTTPException(status_code=404, detail="Procurement not found")
 
     if since or until:
         all_edges = [
@@ -162,9 +188,9 @@ def graph(
         ),
         data_mode=dataset,
         notice=(
-            "Fikcyjne dane demonstracyjne. Nie opisują rzeczywistych zamówień ani podmiotów."
+            "Fictional demo data. These records do not describe real procurements or entities."
             if is_demo
-            else "Dane źródłowe. Każda relacja wymaga weryfikacji w podanym dokumencie."
+            else "Source data. Verify each relationship in the linked notice."
         ),
     )
 
@@ -218,7 +244,7 @@ def search(
 def entity(entity_id: str, db: Session = Depends(get_db)) -> NodeOut:
     node = db.get(GraphNode, entity_id)
     if node is None:
-        raise HTTPException(status_code=404, detail="Nie znaleziono podmiotu")
+        raise HTTPException(status_code=404, detail="Entity not found")
     return _node_out(node)
 
 
@@ -231,5 +257,5 @@ def stories() -> list[StoryOut]:
 def story(story_id: str) -> StoryOut:
     match = next((item for item in STORIES if item["id"] == story_id), None)
     if match is None:
-        raise HTTPException(status_code=404, detail="Nie znaleziono ścieżki demonstracyjnej")
+        raise HTTPException(status_code=404, detail="Demo path not found")
     return StoryOut(**match)

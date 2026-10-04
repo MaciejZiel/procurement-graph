@@ -5,7 +5,7 @@ const apiBase = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(`${apiBase}/api/${path}`);
   if (!response.ok) {
-    throw new Error(`API odpowiedziało kodem ${response.status}`);
+    throw new Error(`API returned status ${response.status}`);
   }
   return response.json() as Promise<T>;
 }

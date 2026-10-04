@@ -10,7 +10,7 @@ const python = resolve(backendDir, ".venv/bin/uvicorn");
 const vite = resolve(frontendDir, "node_modules/vite/bin/vite.js");
 
 if (!existsSync(python)) {
-  console.error("Brak backend/.venv. Utwórz środowisko i zainstaluj zależności z README.");
+  console.error("Missing backend/.venv. Create the environment and install dependencies as described in README.");
   process.exit(1);
 }
 
@@ -56,4 +56,4 @@ web.on("exit", (code) => {
   }
 });
 
-console.log("Jawny Ślad: http://localhost:5173 · API docs: http://localhost:8000/docs");
+console.log("Procurement Graph: http://localhost:5173 · API docs: http://localhost:8000/docs");

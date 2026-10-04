@@ -81,7 +81,7 @@ def extract_rows(payload: Any) -> list[dict[str, Any]]:
     if isinstance(payload, list):
         return [item for item in payload if isinstance(item, dict)]
     if not isinstance(payload, dict):
-        raise ValueError("Oczekiwano tablicy lub obiektu JSON z ogłoszeniami.")
+        raise ValueError("Expected an array or an object containing JSON notices.")
 
     for key in ("notices", "items", "content", "results", "data", "records"):
         candidate = payload.get(key)
@@ -94,7 +94,7 @@ def extract_rows(payload: Any) -> list[dict[str, Any]]:
                 continue
     if any(key in payload for key in ("noticeId", "noticeNumber", "announcementNumber", "id")):
         return [payload]
-    raise ValueError("Nie rozpoznaję struktury odpowiedzi BZP; zapisano ją do inspekcji.")
+    raise ValueError("Unrecognized BZP response structure; saved it for inspection.")
 
 
 def _parse_date(value: Any) -> date | None:
@@ -285,7 +285,7 @@ def save_notices(
                 id=buyer_id,
                 kind="institution",
                 label=buyer,
-                subtitle="Zamawiający · dane źródłowe",
+                subtitle="Buyer · source data",
                 city=city,
                 details={"source": "BZP", "tax_id": notice["buyer_tax_id"]},
                 is_demo=False,
@@ -296,16 +296,16 @@ def save_notices(
                 id=notice_id,
                 kind="procurement",
                 label=title,
-                subtitle="Postępowanie · dane BZP",
+                subtitle="Procurement · BZP data",
                 city=city,
                 details={
                     "reference": notice["notice_number"],
                     "published_on": notice["published"].isoformat()
                     if notice["published"]
                     else None,
-                    "status": "Ogłoszenie o wyniku postępowania"
+                    "status": "Procurement result notice"
                     if notice["notice_type"] == "TenderResultNotice"
-                    else "Ogłoszenie BZP",
+                    else "BZP notice",
                     "amount_pln": float(notice["amount"]) if notice["amount"] is not None else None,
                     "offers": row.get("offersCount"),
                     "source": "BZP",
@@ -319,7 +319,7 @@ def save_notices(
             )
         )
         occurred_at = notice["published"]
-        evidence = f"Ogłoszenie BZP {notice['notice_number']}"
+        evidence = f"BZP notice {notice['notice_number']}"
         session.merge(
             GraphEdge(
                 id=f"{notice_id}-published-by",
@@ -344,8 +344,8 @@ def save_notices(
                     id=supplier_id,
                     kind="company",
                     label=supplier["name"][:240],
-                    subtitle="Wykonawca wskazany w danych BZP",
-                    city=supplier["city"] or "Nie podano",
+                    subtitle="Supplier named in BZP data",
+                    city=supplier["city"] or "Not provided",
                     details={"source": "BZP", "tax_id": supplier["tax_id"]},
                     is_demo=False,
                 )
@@ -374,14 +374,14 @@ def save_notices(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Importuje ogłoszenia BZP do Jawnego Śladu.")
-    parser.add_argument("--input", type=Path, help="Plik JSON z odpowiedzią API BZP")
+    parser = argparse.ArgumentParser(description="Import BZP notices into Procurement Graph.")
+    parser.add_argument("--input", type=Path, help="JSON file with a BZP API response")
     parser.add_argument("--url", default=os.getenv("BZP_API_URL", DEFAULT_BZP_URL))
     parser.add_argument(
-        "--city", default="Warszawa", help="Miasto zamawiającego; domyślnie Warszawa"
+        "--city", default="Warszawa", help="Buyer city; defaults to Warsaw"
     )
     parser.add_argument(
-        "--since", default=None, help="Data graniczna YYYY-MM-DD; domyślnie ostatnie 2 lata"
+        "--since", default=None, help="Start date YYYY-MM-DD; defaults to the last 2 years"
     )
     parser.add_argument("--notice-type", default="TenderResultNotice")
     parser.add_argument("--page-size", type=int, default=500)
@@ -394,7 +394,7 @@ def main() -> None:
         payload = json.loads(args.input.read_text(encoding="utf-8"))
     else:
         if not 1 <= args.page_size <= 500 or args.max_pages < 1:
-            parser.error("PageSize musi być w zakresie 1–500, a max-pages musi być dodatnie.")
+            parser.error("Page size must be 1–500 and max-pages must be positive.")
         payload = []
         search_after = None
         for page in range(args.max_pages):
@@ -415,23 +415,26 @@ def main() -> None:
                 break
             next_cursor = page_rows[-1].get("objectId")
             if not next_cursor or next_cursor == search_after:
-                raise SystemExit("Brak nowego kursora ObjectId; import przerwany.")
+                raise SystemExit("No new ObjectId cursor; import stopped.")
             search_after = next_cursor
         else:
-            print(f"Osiągnięto limit {args.max_pages} stron; możliwe są dalsze ogłoszenia.")
+            print(f"Reached the limit of {args.max_pages} pages; more notices may exist.")
 
     try:
         rows = extract_rows(payload)
     except ValueError as error:
-        snapshot = Path(os.getenv("BZP_SNAPSHOT_DIR", "/tmp/jawny-slad-bzp")) / "bzp-response.json"
+        snapshot = (
+            Path(os.getenv("BZP_SNAPSHOT_DIR", "/tmp/procurement-graph-bzp"))
+            / "bzp-response.json"
+        )
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         snapshot.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-        raise SystemExit(f"{error} Odpowiedź zapisana do {snapshot}.") from error
+        raise SystemExit(f"{error} Response saved to {snapshot}.") from error
 
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
         count = save_notices(session, rows, city_filter=args.city, since=cutoff)
-    print(f"Zaimportowano lub zaktualizowano {count} ogłoszeń z miasta: {args.city}.")
+    print(f"Imported or updated {count} notices for city: {args.city}.")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="Jawny Ślad API",
+    title="Procurement Graph API",
     description="Read-only API for exploring public procurement relationships.",
     version="0.1.0",
     lifespan=lifespan,
@@ -44,4 +44,4 @@ app.include_router(router)
 
 @app.get("/", tags=["system"])
 def root() -> dict[str, str]:
-    return {"name": "Jawny Ślad API", "docs": "/docs", "health": "/api/health"}
+    return {"name": "Procurement Graph API", "docs": "/docs", "health": "/api/health"}

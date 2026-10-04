@@ -7,6 +7,9 @@
 .intro-actions .intro-primary:hover { background: #346d49; }
 .top-nav button { height: 100%; padding: 0; border: 0; background: transparent; color: #aabdb0; font-size: 12px; font-weight: 600; cursor: pointer; }
 .top-nav button:hover { color: #f7faf2; }
+.language-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid #365544; }
+.language-toggle button { min-width: 31px; padding: 5px 6px; border: 0; background: transparent; color: #aabdb0; font: 10px var(--mono); cursor: pointer; }
+.language-toggle button[aria-pressed="true"] { background: #d8edce; color: #193424; }
 
 .case-spotlight { margin: 0 clamp(24px, 4.1vw, 68px) 46px; border: 1px solid #c4d0c3; background: #f8faf4; box-shadow: 0 18px 42px #1934240d; }
 .case-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 14px 24px; border-bottom: 1px solid #d6dfd2; background: #e8efe4; color: #4d7659; font: 10px var(--mono); letter-spacing: .07em; }
@@ -71,6 +74,7 @@
   .intro-section { padding-top: 32px; padding-bottom: 20px; }
   .intro-copy h1 { font-size: 46px; }
   .topbar.nav-open .top-nav button { height: 40px; text-align: left; border-bottom: 1px solid #365544; }
+  .topbar.nav-open .language-toggle { grid-column: 1 / -1; justify-self: start; margin-top: 8px; }
   .case-spotlight { margin: 0 20px 30px; }
   .case-heading { padding: 12px 13px; }
   .case-heading a { font-size: 10px; text-align: right; }

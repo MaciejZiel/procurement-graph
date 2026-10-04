@@ -41,7 +41,7 @@ def test_extract_rows_accepts_common_pagination_envelope():
 
 
 def test_extract_rows_fails_closed_for_unknown_response():
-    with pytest.raises(ValueError, match="Nie rozpoznaję struktury"):
+    with pytest.raises(ValueError, match="Unrecognized BZP response structure"):
         extract_rows({"message": "unexpected"})
 
 

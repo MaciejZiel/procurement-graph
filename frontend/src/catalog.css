@@ -75,9 +75,11 @@
   .catalog-date small { font-size: 10px; }
   .catalog-title strong { font-size: 13px; }
   .catalog-entity { font-size: 11px; }
-  .catalog-entity::before { content: "ZAMAWIAJĄCY · "; color: #72947a; font: 9px var(--mono); }
+  .catalog-entity::before { content: "BUYER · "; color: #72947a; font: 9px var(--mono); }
   .catalog-supplier { display: flex; flex-direction: column; align-items: start; gap: 2px; font-size: 11px; }
-  .catalog-supplier::before { content: "WYKONAWCA"; color: #72947a; font: 9px var(--mono); }
+  .catalog-supplier::before { content: "SUPPLIER"; color: #72947a; font: 9px var(--mono); }
+  :lang(pl) .catalog-entity::before { content: "ZAMAWIAJĄCY · "; }
+  :lang(pl) .catalog-supplier::before { content: "WYKONAWCA"; }
   .catalog-supplier small { margin: 0; }
   .catalog-source { width: 50px; flex-basis: 50px; font-size: 10px; }
   .catalog-pagination { align-items: stretch; gap: 12px; flex-direction: column; }

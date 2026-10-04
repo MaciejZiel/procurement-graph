@@ -1,15 +1,17 @@
 # Jawny Ślad
 
-**Zobacz, jak łączą się zamówienia publiczne.**
+**Kto zamawia, kogo wskazano i gdzie jest źródło?**
 
-Jawny Ślad to aplikacja do odkrywania powiązań między instytucjami, wykonawcami i postępowaniami publicznymi. Każde połączenie w grafie prowadzi do informacji o źródle. Aplikacja pokazuje wzorce do sprawdzenia, nie oskarżenia.
+Jawny Ślad pozwala przeczytać jedno ogłoszenie o wyniku w prosty sposób: pokazuje zamawiającego, przedmiot, wskazanego wykonawcę i wynik, a następnie prowadzi do danych BZP. Rejestr służy do wyboru kolejnej sprawy. Mapa powiązań jest dodatkowym widokiem do eksploracji relacji.
 
-![Eksplorator powiązań](docs/dashboard.png)
+![Przykładowe postępowanie w aplikacji](docs/dashboard.jpg)
 
 Po pierwszym uruchomieniu domyślnie otwiera się zbiór BZP: do repozytorium dołączono 1214 prawdziwych ogłoszeń warszawskich zamawiających z okresu 1 września – 3 października 2026 r. Dane fikcyjne są dostępne oddzielnie jako „Scenariusz demo”. Dołączony zbiór jest migawką, więc do pracy na aktualnych danych użyj importera.
 
 ## Co działa
 
+- czytelna karta jednego postępowania z odpowiedziami i linkiem do źródła,
+- wyszukiwarka rejestru, która otwiera wybraną sprawę w tej karcie,
 - interaktywny atlas relacji: przechodzenie między wszystkimi postępowaniami, losowy widok, powiększanie, przesuwanie i pełny ekran,
 - podświetlanie ścieżki zamawiający → postępowanie → wykonawca, z panelem szczegółów i źródłem,
 - katalog wszystkich zaimportowanych postępowań z wyszukiwaniem, filtrowaniem, sortowaniem i stronicowaniem,

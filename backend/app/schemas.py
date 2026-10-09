@@ -87,3 +87,62 @@ class ProcurementPageOut(BaseModel):
     buyers_count: int
     suppliers_count: int
     latest_event_at: date | None
+
+
+class BreakdownOut(BaseModel):
+    key: str
+    notices: int
+    value_pln: Decimal | None
+    single_bid_rate: float | None
+
+
+class AnalyticsSummaryOut(BaseModel):
+    notices: int
+    awarded_notices: int
+    total_value_pln: Decimal | None
+    buyers: int
+    suppliers: int
+    notices_with_offer_count: int
+    single_bid_notices: int
+    single_bid_rate: float | None
+    average_offers: float | None
+    first_published_on: date | None
+    last_published_on: date | None
+    by_order_type: list[BreakdownOut]
+    cities: list[str]
+
+
+class RankedEntityOut(BaseModel):
+    id: str
+    label: str
+    city: str
+    rank: int
+    notices: int
+    value_pln: Decimal
+    value_share: float | None
+    single_bid_notices: int
+    counterparts: int
+
+
+class BuyerConcentrationOut(BaseModel):
+    buyer_id: str
+    buyer_label: str
+    buyer_city: str
+    awards: int
+    suppliers: int
+    value_pln: Decimal
+    hhi: float
+    top_supplier_id: str
+    top_supplier_label: str
+    top_supplier_share: float
+    top_supplier_wins: int
+    basis: str
+
+
+class TrendPointOut(BaseModel):
+    period: date
+    notices: int
+    value_pln: Decimal
+    single_bid_rate: float | None
+    cumulative_notices: int
+    cumulative_value_pln: Decimal

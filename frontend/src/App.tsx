@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
-import { fetchGraph, fetchProcurements, fetchStories } from "./api";
+import { fetchGraph, fetchProcurements, fetchRedFlagSummary, fetchStories } from "./api";
 import Analytics from "./Analytics";
 import Catalog from "./Catalog";
 import CaseSpotlight from "./CaseSpotlight";
 import { localizeSource, t, type Language } from "./i18n";
-import type { GraphData, GraphNode, NodeKind, ProcurementItem, ProcurementPage, Story } from "./types";
+import type { GraphData, GraphNode, NodeKind, ProcurementItem, ProcurementPage, RedFlagSummary, Story } from "./types";
 
 const kinds: { id: NodeKind; label: string; color: string }[] = [
   { id: "institution", label: "BUYERS", color: "#a99bff" },
@@ -369,6 +369,8 @@ function App() {
   const [catalogPage, setCatalogPage] = useState(1);
   const [catalogOrderType, setCatalogOrderType] = useState("");
   const [supplierFilter, setSupplierFilter] = useState<"all" | "with" | "without">("all");
+  const [flagFilter, setFlagFilter] = useState(() => new URLSearchParams(window.location.search).get("flag") ?? "");
+  const [flagSummary, setFlagSummary] = useState<RedFlagSummary | null>(null);
   const [catalogSort, setCatalogSort] = useState<"newest" | "oldest" | "title">("newest");
   const [focusTender, setFocusTender] = useState<string | null>(() => new URLSearchParams(window.location.search).get("focus"));
   const [graphOffset, setGraphOffset] = useState(() => {
@@ -498,6 +500,7 @@ function App() {
         ...periodBounds(dateWindow),
         orderType: catalogOrderType || undefined,
         hasSupplier: supplierFilter === "all" ? undefined : supplierFilter === "with",
+        flag: flagFilter || undefined,
         sort: catalogSort,
         page: catalogPage,
       }).then((next) => {
@@ -509,7 +512,14 @@ function App() {
       });
     }, 180);
     return () => window.clearTimeout(timer);
-  }, [query, dataset, dateWindow, catalogOrderType, supplierFilter, catalogSort, catalogPage]);
+  }, [query, dataset, dateWindow, catalogOrderType, supplierFilter, flagFilter, catalogSort, catalogPage]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setFlagSummary(null);
+    fetchRedFlagSummary(dataset).then((summary) => { if (!cancelled) setFlagSummary(summary); }).catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [dataset]);
 
   const selectedNode = data?.nodes.find((node) => node.id === selectedId) ?? null;
   const relatedEdges = data?.edges.filter((edge) => edge.source_id === selectedId || edge.target_id === selectedId) ?? [];
@@ -614,6 +624,7 @@ function App() {
     setQuery("");
     setCatalogOrderType("");
     setSupplierFilter("all");
+    setFlagFilter("");
     setDateWindow("all");
     setCatalogPage(1);
     setFocusTender(null);
@@ -829,6 +840,9 @@ function App() {
           selectedId={focusTender}
           orderType={catalogOrderType}
           supplierFilter={supplierFilter}
+          flag={flagFilter}
+          flagSummary={flagSummary}
+          onFlag={(value) => { setFlagFilter(value); setCatalogPage(1); }}
           sort={catalogSort}
           onOrderType={(value) => { setCatalogOrderType(value); setCatalogPage(1); setGraphOffset(0); setFocusTender(null); }}
           onSupplierFilter={(value) => { setSupplierFilter(value); setCatalogPage(1); }}

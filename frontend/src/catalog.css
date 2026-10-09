@@ -86,3 +86,7 @@
   .catalog-pagination > div { justify-content: space-between; gap: 5px; }
   .catalog-pagination button { padding: 9px; }
 }
+
+.flag-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+.flag-pill { padding: 2px 7px; border: 1px solid #e2b892; border-radius: 10px; background: #fbf1e7; color: #8a4c22; font: normal 10px/1.4 var(--mono); letter-spacing: .02em; }
+.catalog-flag-note { margin: 0 0 12px; padding: 9px 13px; border-left: 3px solid var(--orange); background: #fbf1e7; color: #6d4a2c; font-size: 12px; line-height: 1.5; }

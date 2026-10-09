@@ -60,6 +60,7 @@ export interface ProcurementItem {
   procedure_result: string | null;
   source_url: string | null;
   is_demo: boolean;
+  flags: RedFlagCode[];
 }
 
 export interface ProcurementPage {
@@ -130,4 +131,24 @@ export interface TrendPoint {
   single_bid_rate: number | null;
   cumulative_notices: number;
   cumulative_value_pln: string;
+}
+
+export type RedFlagCode = "single_bid" | "repeat_supplier" | "short_procedure" | "non_competitive";
+
+export interface RedFlag {
+  code: RedFlagCode;
+  params: Record<string, string | number | null>;
+}
+
+export interface ProcurementFlags {
+  procurement_id: string;
+  flags: RedFlag[];
+  disclaimer: string;
+}
+
+export interface RedFlagSummary {
+  notices: number;
+  flagged_notices: number;
+  disclaimer: string;
+  signals: { code: RedFlagCode; title: string; description: string; count: number }[];
 }

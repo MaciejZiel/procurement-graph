@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
-import type { ProcurementItem, ProcurementPage } from "./types";
+import type { ProcurementItem, ProcurementPage, RedFlagSummary } from "./types";
 import { t, type Language } from "./i18n";
+import { disclaimer, flagCodes, flagTitle } from "./redFlags";
 
 const orderLabels: Record<string, string> = {
   Delivery: "Supplies",
@@ -25,9 +26,12 @@ interface CatalogProps {
   selectedId: string | null;
   orderType: string;
   supplierFilter: "all" | "with" | "without";
+  flag: string;
+  flagSummary: RedFlagSummary | null;
   sort: "newest" | "oldest" | "title";
   onOrderType: (value: string) => void;
   onSupplierFilter: (value: "all" | "with" | "without") => void;
+  onFlag: (value: string) => void;
   onSort: (value: "newest" | "oldest" | "title") => void;
   onPage: (value: number) => void;
   onSelect: (item: ProcurementItem) => void;
@@ -35,8 +39,8 @@ interface CatalogProps {
 }
 
 export default function Catalog({
-  data, language, loading, error, query, inputRef, onQuery, dataset, selectedId, orderType, supplierFilter, sort,
-  onOrderType, onSupplierFilter, onSort, onPage, onSelect, onReset,
+  data, language, loading, error, query, inputRef, onQuery, dataset, selectedId, orderType, supplierFilter, flag, flagSummary, sort,
+  onOrderType, onSupplierFilter, onFlag, onSort, onPage, onSelect, onReset,
 }: CatalogProps) {
   const first = data?.total ? (data.page - 1) * data.page_size + 1 : 0;
   const last = data ? Math.min(data.page * data.page_size, data.total) : 0;
@@ -78,6 +82,16 @@ export default function Catalog({
               <option value="without">{t("Missing", language)}</option>
             </select>
           </label>
+          <label>{t("SIGNALS", language)}
+            <select name="flag" value={flag} onChange={(event) => onFlag(event.target.value)} aria-label={t("Filter by statistical signal", language)}>
+              <option value="">{t("All", language)}</option>
+              <option value="any">{t("Any signal", language)}{flagSummary ? ` (${flagSummary.flagged_notices})` : ""}</option>
+              {flagCodes.map((code) => {
+                const counted = flagSummary?.signals.find((signal) => signal.code === code)?.count;
+                return <option key={code} value={code}>{flagTitle(code, language)}{counted !== undefined ? ` (${counted})` : ""}</option>;
+              })}
+            </select>
+          </label>
           <label>{t("SORT", language)}
             <select name="sort" value={sort} onChange={(event) => onSort(event.target.value as CatalogProps["sort"])} aria-label={t("Sort registry", language)}>
               <option value="newest">{t("Newest", language)}</option>
@@ -87,6 +101,7 @@ export default function Catalog({
           </label>
         </div>
       </details>
+      {flag && <p className="catalog-flag-note"><b>{t("Statistical signals", language)}:</b> {disclaimer(language)}</p>}
 
       <div className="catalog-table" aria-live="polite" aria-busy={loading}>
         <div className="catalog-column-head" aria-hidden="true"><span>{t("DATE / TYPE", language)}</span><span>{t("PROCUREMENT", language)}</span><span>{t("BUYER", language)}</span><span>{t("SUPPLIER", language)}</span><span>{t("SOURCE", language)}</span></div>
@@ -97,7 +112,7 @@ export default function Catalog({
           <article className={`catalog-row ${item.id === selectedId ? "catalog-selected" : ""}`} key={item.id}>
             <button className="catalog-open" onClick={() => onSelect(item)} aria-label={`${t("Open case:", language)} ${item.title}`}>
               <span className="catalog-date"><strong>{shortDate(item.published_on, language)}</strong><small>{t(orderLabels[item.order_type ?? ""] ?? "Procurement", language)}</small></span>
-              <span className="catalog-title"><small>{String((data.page - 1) * data.page_size + index + 1).padStart(3, "0")} / {item.reference ?? t("NO NUMBER", language)}</small><strong>{item.title}</strong></span>
+              <span className="catalog-title"><small>{String((data.page - 1) * data.page_size + index + 1).padStart(3, "0")} / {item.reference ?? t("NO NUMBER", language)}</small><strong>{item.title}</strong>{item.flags.length > 0 && <span className="flag-pills" aria-label={t("Statistical signals", language)}>{item.flags.map((code) => <i key={code} className="flag-pill">{flagTitle(code, language)}</i>)}</span>}</span>
               <span className="catalog-entity">{item.buyer?.label ?? t("Not provided", language)}</span>
               <span className="catalog-supplier">{item.suppliers.length ? <>{item.suppliers[0].label}{item.suppliers.length > 1 && <small>+{item.suppliers.length - 1} {t("suppliers", language)}</small>}</> : <i>{t("Not named in the notice", language)}</i>}</span>
             </button>

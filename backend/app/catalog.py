@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .models import GraphEdge, GraphNode
+from .red_flags import FlagScope, flags_by_procurement
 from .schemas import EntityRefOut, ProcurementOut, ProcurementPageOut
 
 
@@ -39,6 +40,7 @@ def list_procurements(
     sort: str,
     page: int,
     page_size: int,
+    flag: str | None = None,
 ) -> ProcurementPageOut:
     is_demo = dataset == "demo"
     nodes = db.scalars(select(GraphNode).where(GraphNode.is_demo.is_(is_demo))).all()
@@ -50,6 +52,7 @@ def list_procurements(
         incoming.setdefault(edge.target_id, []).append(edge)
         outgoing.setdefault(edge.source_id, []).append(edge)
 
+    flags = flags_by_procurement(db, FlagScope(dataset=dataset))
     needle = _search_text(q.strip()) if q else ""
     rows: list[ProcurementOut] = []
     for node in nodes:
@@ -62,6 +65,11 @@ def list_procurements(
         if until and (published is None or published > until):
             continue
         if order_type and details.get("order_type") != order_type:
+            continue
+        node_flags = sorted({item.code for item in flags.get(node.id, [])})
+        if flag == "any" and not node_flags:
+            continue
+        if flag and flag != "any" and flag not in node_flags:
             continue
         buyer_node = next(
             (
@@ -109,6 +117,7 @@ def list_procurements(
                 else None,
                 source_url=str(source_url) if source_url else None,
                 is_demo=is_demo,
+                flags=node_flags,
             )
         )
 

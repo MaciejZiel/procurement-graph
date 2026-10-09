@@ -62,8 +62,8 @@ jobs:
           cache-dependency-path: backend/pyproject.toml
       - name: Install
         run: pip install -e '.[dev]'
-      - name: Analytics SQL tests on PostgreSQL
-        run: pytest -q tests/test_analytics.py
+      - name: Analytics and red-flag SQL tests on PostgreSQL
+        run: pytest -q tests/test_analytics.py tests/test_red_flags.py
 
   frontend:
     name: Frontend (type check + build)

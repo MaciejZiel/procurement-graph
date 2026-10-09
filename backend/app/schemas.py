@@ -64,6 +64,31 @@ class EntityRefOut(BaseModel):
     city: str
 
 
+class RedFlagOut(BaseModel):
+    code: str
+    params: dict[str, Any]
+
+
+class RedFlagDefinitionOut(BaseModel):
+    code: str
+    title: str
+    description: str
+    count: int
+
+
+class RedFlagSummaryOut(BaseModel):
+    notices: int
+    flagged_notices: int
+    disclaimer: str
+    signals: list[RedFlagDefinitionOut]
+
+
+class ProcurementFlagsOut(BaseModel):
+    procurement_id: str
+    flags: list[RedFlagOut]
+    disclaimer: str
+
+
 class ProcurementOut(BaseModel):
     id: str
     title: str
@@ -76,6 +101,7 @@ class ProcurementOut(BaseModel):
     procedure_result: str | None
     source_url: str | None
     is_demo: bool
+    flags: list[str] = []
 
 
 class ProcurementPageOut(BaseModel):

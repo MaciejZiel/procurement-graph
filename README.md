@@ -61,4 +61,4 @@ The importer uses the [public BZP endpoint](https://ezamowienia.gov.pl/mo-board/
 
 ## License
 
-Portfolio project. External data remains subject to its source terms.
+The source code is released under the MIT License, see [LICENSE](LICENSE). Imported BZP data remains subject to the terms of its source.

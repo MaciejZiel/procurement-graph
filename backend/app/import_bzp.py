@@ -377,9 +377,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Import BZP notices into Procurement Graph.")
     parser.add_argument("--input", type=Path, help="JSON file with a BZP API response")
     parser.add_argument("--url", default=os.getenv("BZP_API_URL", DEFAULT_BZP_URL))
-    parser.add_argument(
-        "--city", default="Warszawa", help="Buyer city; defaults to Warsaw"
-    )
+    parser.add_argument("--city", default="Warszawa", help="Buyer city; defaults to Warsaw")
     parser.add_argument(
         "--since", default=None, help="Start date YYYY-MM-DD; defaults to the last 2 years"
     )
@@ -424,8 +422,7 @@ def main() -> None:
         rows = extract_rows(payload)
     except ValueError as error:
         snapshot = (
-            Path(os.getenv("BZP_SNAPSHOT_DIR", "/tmp/procurement-graph-bzp"))
-            / "bzp-response.json"
+            Path(os.getenv("BZP_SNAPSHOT_DIR", "/tmp/procurement-graph-bzp")) / "bzp-response.json"
         )
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         snapshot.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")

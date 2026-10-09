@@ -1,34 +1,64 @@
 # Procurement Graph
 
-**Trace a public procurement notice from buyer to supplier.**
+**Trace a Polish public procurement notice from buyer to supplier, with a link back to the official source.**
 
-Procurement Graph turns a result notice into a readable case: what was bought, who bought it, which supplier was named, what outcome was reported, and where the original notice can be checked. The registry lets you find another case. The relationship map is an optional view for exploring connected records.
+[![CI](https://github.com/MaciejZiel/procurement-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/MaciejZiel/procurement-graph/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-PostgreSQL-009688.svg)
+![React + TypeScript](https://img.shields.io/badge/React-TypeScript-3178c6.svg)
 
-![A procurement case in Procurement Graph](docs/dashboard.jpg)
+![Case view: buyer, supplier and reported outcome of one BZP notice](docs/case-view.png)
 
-The app opens in Polish and includes an English language switch. It uses a bundled snapshot of 1,214 real result notices from Warsaw buyers, published between September 1 and October 3, 2026. This is a fixed snapshot, not a live feed. A separate demo dataset contains fictional records. Names and notice titles from the Polish source remain in their original language.
+Procurement Graph turns a result notice from BZP (Poland's public procurement bulletin) into a readable case: what was bought, who bought it, which supplier was named, what outcome was reported, and where the original notice can be checked. It ships with a snapshot of 1,214 real result notices from Warsaw buyers (published September 1 – October 3, 2026) and a separate set of fictional demo records. The interface opens in Polish and has an English switch.
 
-## Features
+## What it does
 
-- A case view with buyer, supplier, reported outcome, and a link to the original BZP notice.
-- A searchable, sortable registry with filters and pagination.
-- A relationship map showing buyers, procurements, and suppliers, with source evidence for each connection.
-- Guided paths through fictional demo records.
-- A read-only FastAPI backend and PostgreSQL storage in Docker Compose.
-- A BZP importer that supports city and date filters, multiple suppliers per notice, and repeatable imports.
+- **Case view** – one notice answered as three questions: who is buying, which supplier was named, what the outcome was, plus a link to the original BZP notice.
+- **Registry** – searchable (diacritics-insensitive), sortable and filterable list of all notices with pagination.
+- **Relationship map** – buyers → procurements → suppliers drawn as a custom SVG graph; every connection shows the notice it comes from.
+- **BZP importer** – a CLI that pulls result notices from the official e-Zamówienia API with city/date filters, handles multiple suppliers per notice, and can be re-run safely.
+- **Read-only REST API** – FastAPI with OpenAPI docs at `/docs`.
 
-## Run locally
+| Registry | Relationship map |
+| --- | --- |
+| ![Registry of BZP notices](docs/registry.png) | ![Relationship map of buyers, procurements and suppliers](docs/relationship-map.png) |
 
-Docker and Compose are required for the container setup:
+## Architecture
+
+```mermaid
+flowchart LR
+    BZP[(BZP / e-Zamówienia API)] -->|python -m app.import_bzp| IMP[Importer<br/>normalise + upsert]
+    SNAP[bzp_sample.json<br/>bundled snapshot] -->|seeded on startup| IMP
+    IMP --> DB[(PostgreSQL<br/>graph_nodes / graph_edges)]
+    DB --> API[FastAPI<br/>/api/graph, /api/procurements,<br/>/api/search, /api/stories]
+    API -->|JSON| WEB[React + TypeScript SPA<br/>case view, registry, SVG map]
+```
+
+Data is stored as a small property graph in two relational tables: `graph_nodes` (institution, procurement, company) and `graph_edges` (published, selected supplier). Each edge carries its evidence: source label, notice URL, date and amount when available.
+
+## Tech stack
+
+- **Backend:** Python 3.11+, FastAPI, SQLAlchemy 2, psycopg 3, httpx
+- **Database:** PostgreSQL 17 (Docker Compose); SQLite for local development and tests
+- **Frontend:** React 19, TypeScript, Vite, hand-written SVG graph (no graph library)
+- **Tooling:** pytest, ruff, Docker Compose, GitHub Actions
+
+## Quick start
+
+With Docker:
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-The frontend is available at `http://localhost:5173`; API documentation is at `http://localhost:8000/docs`.
+- App: http://localhost:5173
+- API docs: http://localhost:8000/docs
 
-For local development without Docker:
+The bundled BZP snapshot and the demo dataset are loaded automatically on the first start.
+
+Without Docker (uses SQLite in the ignored `data/` directory):
 
 ```bash
 uv venv backend/.venv
@@ -37,27 +67,43 @@ cd frontend && npm ci
 npm run dev
 ```
 
-The local development command starts both servers and uses SQLite in the ignored `data/` directory. Docker Compose uses PostgreSQL.
+`npm run dev` starts both the API (port 8000) and the Vite dev server (port 5173).
 
-To import more BZP notices after starting Compose:
+### Importing more notices
 
 ```bash
 docker compose exec backend python -m app.import_bzp --city Warszawa --since 2026-09-01
 ```
 
-Without `--since`, the importer requests Warsaw result notices (`TenderResultNotice`) from the official API for the last two years. It also accepts `--notice-type`, `--page-size` (up to 500), `--max-pages` (default 10), or a local JSON file via `--input /app/data/bzp.json`. The importer reports when it reaches the page limit. A supplier connection is created only when the source names that supplier. The demo and BZP datasets are separate (`dataset=demo` and `dataset=live`).
+Without `--since`, the importer requests Warsaw result notices (`TenderResultNotice`) from the last two years. It also accepts `--notice-type`, `--page-size` (up to 500), `--max-pages` (default 10), or a local JSON file via `--input /app/data/bzp.json`, and reports when it hits the page limit. The demo and BZP datasets are kept apart (`dataset=demo` and `dataset=live`).
+
+## Tests
+
+```bash
+cd backend
+.venv/bin/pytest -q          # 11 tests
+.venv/bin/ruff check . && .venv/bin/ruff format --check .
+```
+
+The tests cover the graph API (one-hop search, date windows), the paginated registry with filters, the demo seed, and the BZP importer (response envelopes, normalisation of the official notice shape, idempotent re-import). They run against in-memory SQLite. CI runs the backend lint and tests, plus the frontend type check and build, on every push and pull request.
+
+## Key technical decisions
+
+- **A graph model on top of a relational database.** The domain is naturally a graph (buyer → procurement → supplier), but the queries are simple one-hop traversals over a few thousand rows. Two tables in PostgreSQL avoid running a separate graph database, and SQLAlchemy keeps the same models working on SQLite for tests and local development.
+- **Evidence on every edge.** A connection exists only if a notice reports it, and the edge stores the notice number, URL and date. A supplier edge is created only when the source names that supplier. The UI never infers relationships, which matters for data that could be misread as an accusation.
+- **Idempotent, deterministic imports.** Node IDs come from the tax ID when present, or from a normalised (casefolded, diacritics-stripped) name hashed with SHA-256. Rows are written with `session.merge`, so re-running the importer over overlapping dates updates records instead of duplicating them.
+- **Bundled snapshot instead of a live dependency.** The app seeds a fixed, dated snapshot of real notices on startup, so it is usable offline and in a demo without hitting the government API. Live imports are an explicit CLI step.
+
+## Limitations / next steps
+
+- The graph and registry endpoints load the selected dataset into memory and filter in Python. This is fine for ~1.2k notices but would need SQL-side filtering, indexes and full-text search for a nationwide dataset.
+- The schema is created with `create_all` at startup; there are no migrations (Alembic would be the next step).
+- Scope is result notices from Warsaw buyers. The BZP field mapping was checked against a real API response but should be re-checked before relying on it in production.
+- No frontend tests yet; the frontend is covered only by the TypeScript build.
 
 ## Data and interpretation
 
-The source is the [BZP service of Poland's e-Zamówienia platform](https://ezamowienia.gov.pl/pl/integracja/). The current scope covers notices from Warsaw buyers; suppliers may be based anywhere. A map connection records a relationship reported in a notice. A missing amount or supplier means the available data does not provide that field. The map does not assess wrongdoing or legal compliance.
-
-The importer uses the [public BZP endpoint](https://ezamowienia.gov.pl/mo-board/api/v1/notice). Its mapping was checked against a real API response; the provider format should be checked again before production use.
-
-## Stack
-
-- **Frontend:** React, TypeScript, Vite, custom SVG graph.
-- **Backend:** Python, FastAPI, SQLAlchemy.
-- **Database:** PostgreSQL in Compose; SQLite for local development.
+The source is the [BZP service of Poland's e-Zamówienia platform](https://ezamowienia.gov.pl/pl/integracja/), accessed through its [public endpoint](https://ezamowienia.gov.pl/mo-board/api/v1/notice). Suppliers may be based anywhere. A missing amount or supplier means the source does not provide that field. The map shows relationships reported in notices and does not assess wrongdoing or legal compliance. Names and notice titles stay in their original Polish.
 
 ## License
 

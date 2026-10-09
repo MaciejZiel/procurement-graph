@@ -32,13 +32,13 @@ def test_graph_returns_connected_demo_records_and_notice():
     assert len(result.nodes) == 8
     assert len(result.edges) == 6
     assert result.data_mode == "demo"
-    assert "fikcyjne" in result.notice.casefold()
+    assert "fictional" in result.notice.casefold()
 
 
 def test_search_limits_graph_to_matching_node_and_one_hop():
     with make_session() as session:
         result = graph(
-            q="Mapowa",
+            q="Map Studio",
             kinds=None,
             since=None,
             until=None,

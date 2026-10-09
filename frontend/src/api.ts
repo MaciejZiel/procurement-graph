@@ -1,4 +1,4 @@
-import type { GraphData, ProcurementPage, Story } from "./types";
+import type { AnalyticsSummary, BuyerConcentration, GraphData, ProcurementPage, RankedEntity, Story, TrendPoint } from "./types";
 
 const apiBase = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
@@ -59,4 +59,32 @@ export function fetchProcurements(options: {
 
 export function fetchStories(): Promise<Story[]> {
   return getJson<Story[]>("stories");
+}
+
+export interface AnalyticsScope {
+  dataset: "demo" | "live";
+  city?: string;
+}
+
+function scopeParams(scope: AnalyticsScope, extra: Record<string, string | number> = {}): string {
+  const params = new URLSearchParams({ dataset: scope.dataset });
+  if (scope.city) params.set("city", scope.city);
+  for (const [key, value] of Object.entries(extra)) params.set(key, String(value));
+  return params.toString();
+}
+
+export function fetchAnalyticsSummary(scope: AnalyticsScope): Promise<AnalyticsSummary> {
+  return getJson<AnalyticsSummary>(`analytics/summary?${scopeParams(scope)}`);
+}
+
+export function fetchTopEntities(kind: "buyers" | "suppliers", scope: AnalyticsScope, by: "value" | "count", limit = 8): Promise<RankedEntity[]> {
+  return getJson<RankedEntity[]>(`analytics/top-${kind}?${scopeParams(scope, { by, limit })}`);
+}
+
+export function fetchConcentration(scope: AnalyticsScope, basis: "value" | "count", minAwards = 5, limit = 8): Promise<BuyerConcentration[]> {
+  return getJson<BuyerConcentration[]>(`analytics/concentration?${scopeParams(scope, { basis, min_awards: minAwards, limit })}`);
+}
+
+export function fetchTrends(scope: AnalyticsScope, granularity: "week" | "month"): Promise<TrendPoint[]> {
+  return getJson<TrendPoint[]>(`analytics/trends?${scopeParams(scope, { granularity })}`);
 }

@@ -1,11 +1,12 @@
 """Fictional records used to make the product demo understandable."""
 
 from datetime import date
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import GraphEdge, GraphNode
+from .models import GraphEdge, GraphNode, ProcurementFacts
 
 NODES = [
     {
@@ -202,4 +203,43 @@ def seed_demo_data(session: Session) -> None:
         else:
             for field, value in payload.items():
                 setattr(edge, field, value)
+    session.flush()
+    _seed_demo_facts(session)
     session.commit()
+
+
+def _seed_demo_facts(session: Session) -> None:
+    """Analytics rows for the fictional procurements, derived from the records above."""
+    buyers = {
+        target: source
+        for _, source, target, relationship, _, _ in EDGES
+        if relationship == "published"
+    }
+    signed = {
+        source: occurred
+        for _, source, _, relationship, occurred, _ in EDGES
+        if relationship == "selected supplier"
+    }
+    for payload in NODES:
+        if payload["kind"] != "procurement":
+            continue
+        details = payload["details"]
+        session.merge(
+            ProcurementFacts(
+                procurement_id=payload["id"],
+                buyer_id=buyers.get(payload["id"]),
+                is_demo=True,
+                city="Warszawa",
+                published_on=date.fromisoformat(details["published_on"]),
+                order_type=None,
+                procedure_kind="basic",
+                parts_count=1,
+                awarded_parts=1,
+                offers_count=details.get("offers"),
+                contract_value_pln=Decimal(details["amount_pln"]),
+                estimated_value_pln=None,
+                contract_signed_on=date.fromisoformat(signed[payload["id"]])
+                if payload["id"] in signed
+                else None,
+            )
+        )

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { fetchGraph, fetchProcurements, fetchStories } from "./api";
+import Analytics from "./Analytics";
 import Catalog from "./Catalog";
 import CaseSpotlight from "./CaseSpotlight";
 import { localizeSource, t, type Language } from "./i18n";
@@ -375,6 +376,7 @@ function App() {
     return Number.isFinite(raw) && raw > 0 ? Math.floor(raw / graphPageSize) * graphPageSize : 0;
   });
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [view, setView] = useState<"explore" | "analytics">(() => window.location.hash === "#analytics" ? "analytics" : "explore");
   const searchInput = useRef<HTMLInputElement>(null);
   const mapSearchInput = useRef<HTMLInputElement>(null);
   const requestVersion = useRef(0);
@@ -406,6 +408,28 @@ function App() {
     window.addEventListener("keydown", onSearchShortcut);
     return () => window.removeEventListener("keydown", onSearchShortcut);
   }, [mapExpanded]);
+
+  useEffect(() => {
+    function onHashChange() {
+      const next = window.location.hash === "#analytics" ? "analytics" : "explore";
+      setView(next);
+      const target = window.location.hash && next === "explore" ? window.location.hash : null;
+      window.requestAnimationFrame(() => {
+        if (target) document.querySelector(target)?.scrollIntoView({ block: "start" });
+        else window.scrollTo({ top: 0 });
+      });
+    }
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  function searchRegistry(label: string) {
+    setQuery(label);
+    setCatalogPage(1);
+    setGraphOffset(0);
+    setFocusTender(null);
+    window.location.hash = "#catalog";
+  }
 
   useEffect(() => {
     document.body.style.overflow = mapExpanded ? "hidden" : "";
@@ -604,9 +628,10 @@ function App() {
           <span className="brand-wordmark">{language === "pl" ? <>JAWNY<span>ŚLAD</span></> : <>PROCUREMENT<span>GRAPH</span></>}</span>
         </a>
         <nav className="top-nav" aria-label={t("Main navigation", language)}>
-          <a className="nav-active" href="#case" onClick={() => setMobileNavOpen(false)}>{t("Example", language)}</a>
+          <a className={view === "explore" ? "nav-active" : ""} href="#case" onClick={() => setMobileNavOpen(false)}>{t("Example", language)}</a>
           <a href="#catalog" onClick={() => setMobileNavOpen(false)}>{t("Registry", language)}</a>
-          <button onClick={() => { setMapExpanded(true); setMobileNavOpen(false); }}>{t("Relationship map", language)}</button>
+          <a className={view === "analytics" ? "nav-active" : ""} href="#analytics" onClick={() => setMobileNavOpen(false)}>{t("Analytics", language)}</a>
+          <button onClick={() => { if (view !== "explore") window.location.hash = "#case"; setMapExpanded(true); setMobileNavOpen(false); }}>{t("Relationship map", language)}</button>
           <a href="#sources" onClick={() => setMobileNavOpen(false)}>{t("About the data", language)}</a>
         </nav>
         <div className="top-meta">
@@ -621,6 +646,8 @@ function App() {
       </header>
 
       <main id="top">
+      {view === "analytics" && <Analytics language={language} dataset={dataset} onSearch={searchRegistry} />}
+      {view === "explore" && <>
       <section className="intro-section" id="explore">
           <div className="intro-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> {t("PUBLIC PROCUREMENT", language)} / {t("WARSAW", language)}</div>
@@ -810,6 +837,7 @@ function App() {
           onSelect={selectProcurement}
           onReset={resetCatalogFilters}
         />
+      </>}
 
         <section className="source-note" id="sources" aria-label={t("About the data", language)}>
           <div><span>{t("ABOUT THE DATA", language)}</span><h2>{t("What does this show?", language)}</h2></div>

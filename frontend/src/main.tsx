@@ -6,6 +6,7 @@ import "./visual.css";
 import "./catalog.css";
 import "./atlas.css";
 import "./clarity.css";
+import "./analytics.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

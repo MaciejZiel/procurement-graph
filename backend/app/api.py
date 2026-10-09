@@ -6,11 +6,24 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
+from . import analytics
 from .catalog import list_procurements
 from .database import get_db
 from .demo_data import STORIES
 from .models import GraphEdge, GraphNode
-from .schemas import EdgeOut, GraphOut, HealthOut, NodeOut, ProcurementPageOut, SearchOut, StoryOut
+from .schemas import (
+    AnalyticsSummaryOut,
+    BuyerConcentrationOut,
+    EdgeOut,
+    GraphOut,
+    HealthOut,
+    NodeOut,
+    ProcurementPageOut,
+    RankedEntityOut,
+    SearchOut,
+    StoryOut,
+    TrendPointOut,
+)
 
 router = APIRouter(prefix="/api")
 
@@ -259,3 +272,61 @@ def story(story_id: str) -> StoryOut:
     if match is None:
         raise HTTPException(status_code=404, detail="Demo path not found")
     return StoryOut(**match)
+
+
+def analytics_scope(
+    dataset: str = Query(default="live", pattern="^(demo|live)$"),
+    city: str | None = Query(default=None, max_length=120),
+    since: date | None = None,
+    until: date | None = None,
+) -> analytics.Scope:
+    return analytics.Scope(dataset=dataset, city=city or None, since=since, until=until)
+
+
+@router.get("/analytics/summary", response_model=AnalyticsSummaryOut, tags=["analytics"])
+def analytics_summary(
+    scope: analytics.Scope = Depends(analytics_scope), db: Session = Depends(get_db)
+) -> AnalyticsSummaryOut:
+    return analytics.summary(db, scope)
+
+
+@router.get("/analytics/top-buyers", response_model=list[RankedEntityOut], tags=["analytics"])
+def analytics_top_buyers(
+    by: str = Query(default="value", pattern="^(value|count)$"),
+    limit: int = Query(default=10, ge=1, le=50),
+    scope: analytics.Scope = Depends(analytics_scope),
+    db: Session = Depends(get_db),
+) -> list[RankedEntityOut]:
+    return analytics.top_buyers(db, scope, by=by, limit=limit)
+
+
+@router.get("/analytics/top-suppliers", response_model=list[RankedEntityOut], tags=["analytics"])
+def analytics_top_suppliers(
+    by: str = Query(default="value", pattern="^(value|count)$"),
+    limit: int = Query(default=10, ge=1, le=50),
+    scope: analytics.Scope = Depends(analytics_scope),
+    db: Session = Depends(get_db),
+) -> list[RankedEntityOut]:
+    return analytics.top_suppliers(db, scope, by=by, limit=limit)
+
+
+@router.get(
+    "/analytics/concentration", response_model=list[BuyerConcentrationOut], tags=["analytics"]
+)
+def analytics_concentration(
+    basis: str = Query(default="value", pattern="^(value|count)$"),
+    min_awards: int = Query(default=3, ge=1, le=100),
+    limit: int = Query(default=10, ge=1, le=50),
+    scope: analytics.Scope = Depends(analytics_scope),
+    db: Session = Depends(get_db),
+) -> list[BuyerConcentrationOut]:
+    return analytics.concentration(db, scope, basis=basis, min_awards=min_awards, limit=limit)
+
+
+@router.get("/analytics/trends", response_model=list[TrendPointOut], tags=["analytics"])
+def analytics_trends(
+    granularity: str = Query(default="week", pattern="^(week|month)$"),
+    scope: analytics.Scope = Depends(analytics_scope),
+    db: Session = Depends(get_db),
+) -> list[TrendPointOut]:
+    return analytics.trends(db, scope, granularity=granularity)

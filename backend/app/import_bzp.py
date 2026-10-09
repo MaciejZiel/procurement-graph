@@ -19,8 +19,9 @@ from urllib.parse import urlencode
 import httpx
 from sqlalchemy.orm import Session
 
+from .bzp_body import parse_notice_body, summarise_parts, supplier_values, tax_id_digits
 from .database import Base, SessionLocal, engine
-from .models import GraphEdge, GraphNode
+from .models import GraphEdge, GraphNode, ProcurementFacts
 
 DEFAULT_BZP_URL = "https://ezamowienia.gov.pl/mo-board/api/v1/notice"
 
@@ -219,9 +220,18 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         row
     )
     published = _parse_date(_first(row, "publicationDate", "publishedAt", "noticeDate", "date"))
+    extracted = row.get("extracted")
+    if not isinstance(extracted, dict):
+        extracted = parse_notice_body(row.get("htmlBody"))
+    summary = summarise_parts(extracted)
     amount = _parse_amount(
         _first(row, "awardValue", "contractAmount", "awardedValue", "contractValue")
     )
+    if amount is None:
+        amount = summary["contract_value"]
+    offers = row.get("offersCount")
+    if offers is None:
+        offers = summary["offers_count"]
 
     if (
         not notice_number
@@ -255,7 +265,40 @@ def normalise_notice(row: dict[str, Any], city_filter: str = "Warszawa") -> dict
         "procedure_result": row.get("procedureResult"),
         "notice_type": row.get("noticeType"),
         "tender_id": row.get("tenderId"),
+        "offers": offers,
+        "extracted": extracted,
+        "summary": summary,
     }
+
+
+def _supplier_amount(
+    supplier: dict[str, Any],
+    values_by_tax_id: dict[str, Decimal],
+    notice_amount: Decimal | None,
+    single_supplier: bool,
+) -> Decimal | None:
+    """Value of the parts this supplier won; whole amount only when it is the sole supplier."""
+    tax_id = tax_id_digits(supplier.get("tax_id"))
+    if tax_id and tax_id in values_by_tax_id:
+        return values_by_tax_id[tax_id]
+    if single_supplier and not values_by_tax_id:
+        return notice_amount
+    if single_supplier and values_by_tax_id:
+        return sum(values_by_tax_id.values(), Decimal("0"))
+    return None
+
+
+def compact_notice(row: dict[str, Any]) -> dict[str, Any]:
+    """Replace the bulky HTML body with the facts extracted from it.
+
+    The bundled snapshot keeps the structured API fields verbatim and stores the
+    figures read from ``htmlBody`` under ``extracted``. Contact details that appear
+    only in the HTML (e-mail addresses, street addresses) are not kept.
+    """
+    compact = {key: value for key, value in row.items() if key != "htmlBody"}
+    if "extracted" not in compact:
+        compact["extracted"] = parse_notice_body(row.get("htmlBody"))
+    return compact
 
 
 def save_notices(
@@ -307,7 +350,8 @@ def save_notices(
                     if notice["notice_type"] == "TenderResultNotice"
                     else "BZP notice",
                     "amount_pln": float(notice["amount"]) if notice["amount"] is not None else None,
-                    "offers": row.get("offersCount"),
+                    "offers": notice["offers"],
+                    "procedure_kind": (notice["extracted"] or {}).get("procedure_kind"),
                     "source": "BZP",
                     "source_url": source_url,
                     "order_type": notice["order_type"],
@@ -333,6 +377,8 @@ def save_notices(
             )
         )
 
+        values_by_tax_id = supplier_values(notice["extracted"])
+        single_supplier = len(notice["suppliers"]) == 1
         seen_suppliers: set[str] = set()
         for supplier_index, supplier in enumerate(notice["suppliers"]):
             supplier_id = f"supplier-{_entity_key(supplier['name'], supplier['tax_id'])}"
@@ -363,10 +409,33 @@ def save_notices(
                     evidence_label=evidence,
                     evidence_url=source_url,
                     occurred_at=occurred_at,
-                    amount_pln=notice["amount"],
+                    amount_pln=_supplier_amount(
+                        supplier, values_by_tax_id, notice["amount"], single_supplier
+                    ),
                     is_demo=False,
                 )
             )
+        summary = notice["summary"]
+        extracted = notice["extracted"] or {}
+        estimated = extracted.get("estimated_value")
+        signed = summary["contract_signed_on"]
+        session.merge(
+            ProcurementFacts(
+                procurement_id=notice_id,
+                buyer_id=buyer_id,
+                is_demo=False,
+                city=notice["city"][:120],
+                published_on=notice["published"],
+                order_type=notice["order_type"],
+                procedure_kind=extracted.get("procedure_kind"),
+                parts_count=summary["parts_count"],
+                awarded_parts=summary["awarded_parts"],
+                offers_count=notice["offers"],
+                contract_value_pln=notice["amount"],
+                estimated_value_pln=Decimal(estimated) if estimated else None,
+                contract_signed_on=date.fromisoformat(signed) if signed else None,
+            )
+        )
         session.flush()
         imported += 1
     session.commit()

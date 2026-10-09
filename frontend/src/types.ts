@@ -72,3 +72,62 @@ export interface ProcurementPage {
   suppliers_count: number;
   latest_event_at: string | null;
 }
+
+export interface Breakdown {
+  key: string;
+  notices: number;
+  value_pln: string | null;
+  single_bid_rate: number | null;
+}
+
+export interface AnalyticsSummary {
+  notices: number;
+  awarded_notices: number;
+  total_value_pln: string | null;
+  buyers: number;
+  suppliers: number;
+  notices_with_offer_count: number;
+  single_bid_notices: number;
+  single_bid_rate: number | null;
+  average_offers: number | null;
+  first_published_on: string | null;
+  last_published_on: string | null;
+  by_order_type: Breakdown[];
+  cities: string[];
+}
+
+export interface RankedEntity {
+  id: string;
+  label: string;
+  city: string;
+  rank: number;
+  notices: number;
+  value_pln: string;
+  value_share: number | null;
+  single_bid_notices: number;
+  counterparts: number;
+}
+
+export interface BuyerConcentration {
+  buyer_id: string;
+  buyer_label: string;
+  buyer_city: string;
+  awards: number;
+  suppliers: number;
+  value_pln: string;
+  hhi: number;
+  top_supplier_id: string;
+  top_supplier_label: string;
+  top_supplier_share: number;
+  top_supplier_wins: number;
+  basis: "value" | "count";
+}
+
+export interface TrendPoint {
+  period: string;
+  notices: number;
+  value_pln: string;
+  single_bid_rate: number | null;
+  cumulative_notices: number;
+  cumulative_value_pln: string;
+}

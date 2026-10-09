@@ -16,6 +16,7 @@ Procurement Graph turns a result notice from BZP (Poland's public procurement bu
 
 - **Case view** – one notice answered as three questions: who is buying, which supplier was named, what the outcome was, plus a link to the original BZP notice.
 - **Registry** – searchable (diacritics-insensitive), sortable and filterable list of all notices with pagination.
+- **Analytics** – top buyers and suppliers by contract value or number of notices, supplier concentration per buyer (HHI and share of the largest supplier), single-bid rate and weekly or monthly trends. Computed in SQL (CTEs and window functions) and served by typed endpoints under `/api/analytics/*`.
 - **Relationship map** – buyers → procurements → suppliers drawn as a custom SVG graph; every connection shows the notice it comes from.
 - **BZP importer** – a CLI that pulls result notices from the official e-Zamówienia API with city/date filters, handles multiple suppliers per notice, and can be re-run safely.
 - **Read-only REST API** – FastAPI with OpenAPI docs at `/docs`.
@@ -31,11 +32,13 @@ flowchart LR
     BZP[(BZP / e-Zamówienia API)] -->|python -m app.import_bzp| IMP[Importer<br/>normalise + upsert]
     SNAP[bzp_sample.json<br/>bundled snapshot] -->|seeded on startup| IMP
     IMP --> DB[(PostgreSQL<br/>graph_nodes / graph_edges)]
-    DB --> API[FastAPI<br/>/api/graph, /api/procurements,<br/>/api/search, /api/stories]
+    DB --> API[FastAPI<br/>/api/graph, /api/procurements,<br/>/api/analytics/*, /api/search]
     API -->|JSON| WEB[React + TypeScript SPA<br/>case view, registry, SVG map]
 ```
 
-Data is stored as a small property graph in two relational tables: `graph_nodes` (institution, procurement, company) and `graph_edges` (published, selected supplier). Each edge carries its evidence: source label, notice URL, date and amount when available.
+Data is stored as a small property graph in two relational tables: `graph_nodes` (institution, procurement, company) and `graph_edges` (published, selected supplier). Each edge carries its evidence: source label, notice URL, date and amount when available. A third table, `procurement_facts`, holds one typed row per notice (number of offers, contract value, signing date, procedure kind, city) for the analytics queries.
+
+The BZP list endpoint returns the figures that matter for analytics (offers received, contract value, signing date) only inside each notice's `htmlBody`. The importer reads them from the numbered form fields (`6.1` offers, `8.1` signing date, `8.2` contract value, per part) and stores them under `extracted`; amounts in other currencies are skipped, and for joint bids the part value is attributed to the first listed contractor.
 
 ## Tech stack
 
@@ -54,7 +57,7 @@ docker compose up --build
 ```
 
 - App: http://localhost:5173
-- API docs: http://localhost:8000/docs
+- API docs: http://localhost:8000/docs (the frontend reaches the API through the Vite proxy)
 
 The bundled BZP snapshot and the demo dataset are loaded automatically on the first start.
 

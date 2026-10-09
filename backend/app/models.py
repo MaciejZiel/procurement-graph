@@ -68,3 +68,5 @@ class ProcurementFacts(Base):
     contract_value_pln: Mapped[Decimal | None] = mapped_column(Numeric(16, 2), nullable=True)
     estimated_value_pln: Mapped[Decimal | None] = mapped_column(Numeric(16, 2), nullable=True)
     contract_signed_on: Mapped[date | None] = mapped_column(Date, nullable=True)
+    preceding_notice: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    procedure_started_on: Mapped[date | None] = mapped_column(Date, nullable=True)

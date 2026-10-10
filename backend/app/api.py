@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from . import analytics
+from . import analytics, red_flags
 from .catalog import list_procurements
 from .database import get_db
 from .demo_data import STORIES
@@ -18,8 +18,10 @@ from .schemas import (
     GraphOut,
     HealthOut,
     NodeOut,
+    ProcurementFlagsOut,
     ProcurementPageOut,
     RankedEntityOut,
+    RedFlagSummaryOut,
     SearchOut,
     StoryOut,
     TrendPointOut,
@@ -216,6 +218,11 @@ def procurements(
     until: date | None = None,
     order_type: str | None = Query(default=None, pattern="^(Delivery|Services|Works)$"),
     has_supplier: bool | None = None,
+    flag: str | None = Query(
+        default=None,
+        pattern="^(any|single_bid|repeat_supplier|short_procedure|non_competitive)$",
+        description="Only notices with this red-flag signal (or any signal).",
+    ),
     sort: str = Query(default="newest", pattern="^(newest|oldest|title)$"),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1, le=48),
@@ -232,7 +239,32 @@ def procurements(
         sort=sort,
         page=page,
         page_size=page_size,
+        flag=flag,
     )
+
+
+@router.get(
+    "/procurements/{procurement_id}/flags", response_model=ProcurementFlagsOut, tags=["red flags"]
+)
+def procurement_flags(procurement_id: str, db: Session = Depends(get_db)) -> ProcurementFlagsOut:
+    node = db.get(GraphNode, procurement_id)
+    if node is None or node.kind != "procurement":
+        raise HTTPException(status_code=404, detail="Procurement not found")
+    return ProcurementFlagsOut(
+        procurement_id=procurement_id,
+        flags=red_flags.flags_for(db, procurement_id),
+        disclaimer=red_flags.DISCLAIMER,
+    )
+
+
+@router.get("/red-flags", response_model=RedFlagSummaryOut, tags=["red flags"])
+def red_flag_summary(
+    dataset: str = Query(default="live", pattern="^(demo|live)$"),
+    city: str | None = Query(default=None, max_length=120),
+    db: Session = Depends(get_db),
+) -> RedFlagSummaryOut:
+    """How many notices carry each signal, with the definition of every signal."""
+    return red_flags.summary(db, red_flags.FlagScope(dataset=dataset, city=city or None))
 
 
 @router.get("/search", response_model=SearchOut, tags=["search"])

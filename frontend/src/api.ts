@@ -1,4 +1,4 @@
-import type { AnalyticsSummary, BuyerConcentration, GraphData, ProcurementPage, RankedEntity, Story, TrendPoint } from "./types";
+import type { AnalyticsSummary, BuyerConcentration, GraphData, ProcurementFlags, ProcurementPage, RankedEntity, RedFlagSummary, Story, TrendPoint } from "./types";
 
 const apiBase = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
@@ -39,6 +39,7 @@ export function fetchProcurements(options: {
   until?: string;
   orderType?: string;
   hasSupplier?: boolean;
+  flag?: string;
   sort: "newest" | "oldest" | "title";
   page: number;
   pageSize?: number;
@@ -54,6 +55,7 @@ export function fetchProcurements(options: {
   if (options.until) params.set("until", options.until);
   if (options.orderType) params.set("order_type", options.orderType);
   if (options.hasSupplier !== undefined) params.set("has_supplier", String(options.hasSupplier));
+  if (options.flag) params.set("flag", options.flag);
   return getJson<ProcurementPage>(`procurements?${params.toString()}`);
 }
 
@@ -87,4 +89,12 @@ export function fetchConcentration(scope: AnalyticsScope, basis: "value" | "coun
 
 export function fetchTrends(scope: AnalyticsScope, granularity: "week" | "month"): Promise<TrendPoint[]> {
   return getJson<TrendPoint[]>(`analytics/trends?${scopeParams(scope, { granularity })}`);
+}
+
+export function fetchProcurementFlags(id: string): Promise<ProcurementFlags> {
+  return getJson<ProcurementFlags>(`procurements/${encodeURIComponent(id)}/flags`);
+}
+
+export function fetchRedFlagSummary(dataset: "demo" | "live"): Promise<RedFlagSummary> {
+  return getJson<RedFlagSummary>(`red-flags?dataset=${dataset}`);
 }

@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import re
+import time
 import unicodedata
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
@@ -24,6 +25,9 @@ from .database import Base, SessionLocal, engine
 from .models import GraphEdge, GraphNode, ProcurementFacts
 
 DEFAULT_BZP_URL = "https://ezamowienia.gov.pl/mo-board/api/v1/notice"
+# The API terms allow blocking clients whose traffic loads the platform, and the
+# endpoint answers 403 to bursts. Requests are therefore spaced and retried slowly.
+DEFAULT_REQUEST_DELAY = 1.5
 
 
 def _official_notice_url(row: dict[str, Any]) -> str | None:
@@ -288,6 +292,76 @@ def _supplier_amount(
     return None
 
 
+def polite_get(
+    client: httpx.Client,
+    url: str,
+    params: dict[str, Any],
+    delay: float = DEFAULT_REQUEST_DELAY,
+    retries: int = 5,
+) -> Any:
+    """GET JSON with a pause after each request and a growing back-off on 403/429/5xx."""
+    for attempt in range(retries + 1):
+        response = client.get(url, params=params)
+        if response.status_code in (403, 429) or response.status_code >= 500:
+            if attempt == retries:
+                response.raise_for_status()
+            time.sleep(max(delay, 1) * 20 * (attempt + 1))
+            continue
+        response.raise_for_status()
+        time.sleep(delay)
+        return response.json()
+    raise RuntimeError("unreachable")
+
+
+def _preceding_notice_number(number: str) -> str:
+    """BZP result notices cite the procedure notice without its version suffix."""
+    return number if re.search(r"/\d{2}$", number) else f"{number}/01"
+
+
+def resolve_procedure_starts(
+    rows: list[dict[str, Any]],
+    client: httpx.Client,
+    url: str = DEFAULT_BZP_URL,
+    cache: dict[str, str | None] | None = None,
+    delay: float = DEFAULT_REQUEST_DELAY,
+) -> dict[str, str | None]:
+    """Look up when each procedure was announced and store it as ``procedure_started_on``.
+
+    The result notice only cites the number of the contract notice that opened the
+    procedure (field 2.14). One request per distinct number fetches that notice's
+    publication date; ``cache`` maps numbers to dates so reruns do not repeat requests.
+    Numbers that cannot be found (for example TED references) stay ``None``.
+    """
+    cache = {} if cache is None else cache
+    for row in rows:
+        extracted = row.get("extracted")
+        if not isinstance(extracted, dict):
+            extracted = parse_notice_body(row.get("htmlBody"))
+            row["extracted"] = extracted
+        number = (extracted or {}).get("preceding_notice")
+        if not number:
+            continue
+        if number not in cache:
+            published = _parse_date(row.get("publicationDate")) or date.today()
+            year = int(number[:4]) if number[:4].isdigit() else published.year
+            found = polite_get(
+                client,
+                url,
+                {
+                    "NoticeType": "ContractNotice",
+                    "NoticeNumber": _preceding_notice_number(number),
+                    "PublicationDateFrom": date(year - 1, 1, 1).isoformat(),
+                    "PublicationDateTo": published.isoformat(),
+                    "PageSize": 5,
+                },
+                delay=delay,
+            )
+            dates = sorted(str(item["publicationDate"])[:10] for item in extract_rows(found))
+            cache[number] = dates[0] if dates else None
+        extracted["procedure_started_on"] = cache[number]
+    return cache
+
+
 def compact_notice(row: dict[str, Any]) -> dict[str, Any]:
     """Replace the bulky HTML body with the facts extracted from it.
 
@@ -434,12 +508,53 @@ def save_notices(
                 contract_value_pln=notice["amount"],
                 estimated_value_pln=Decimal(estimated) if estimated else None,
                 contract_signed_on=date.fromisoformat(signed) if signed else None,
+                preceding_notice=extracted.get("preceding_notice"),
+                procedure_started_on=_parse_date(extracted.get("procedure_started_on")),
             )
         )
         session.flush()
         imported += 1
     session.commit()
     return imported
+
+
+def fetch_notices(
+    client: httpx.Client,
+    *,
+    url: str = DEFAULT_BZP_URL,
+    city: str,
+    since: date,
+    until: date,
+    notice_type: str = "TenderResultNotice",
+    page_size: int = 250,
+    max_pages: int = 10,
+    delay: float = DEFAULT_REQUEST_DELAY,
+) -> tuple[list[dict[str, Any]], bool]:
+    """Page through the BZP endpoint with its ``SearchAfter`` cursor.
+
+    Returns the rows and whether the page limit stopped the download early.
+    """
+    rows: list[dict[str, Any]] = []
+    search_after = None
+    for _ in range(max_pages):
+        params: dict[str, Any] = {
+            "NoticeType": notice_type,
+            "PublicationDateFrom": since.isoformat(),
+            "PublicationDateTo": until.isoformat(),
+            "OrganizationCity": city,
+            "PageSize": page_size,
+        }
+        if search_after:
+            params["SearchAfter"] = search_after
+        page_rows = extract_rows(polite_get(client, url, params, delay=delay))
+        rows.extend(page_rows)
+        if len(page_rows) < page_size:
+            return rows, False
+        next_cursor = page_rows[-1].get("objectId")
+        if not next_cursor or next_cursor == search_after:
+            raise SystemExit("No new ObjectId cursor; import stopped.")
+        search_after = next_cursor
+    return rows, True
 
 
 def main() -> None:
@@ -453,6 +568,17 @@ def main() -> None:
     parser.add_argument("--notice-type", default="TenderResultNotice")
     parser.add_argument("--page-size", type=int, default=500)
     parser.add_argument("--max-pages", type=int, default=10)
+    parser.add_argument(
+        "--resolve-start-dates",
+        action="store_true",
+        help="Look up when each procedure was announced (one extra request per notice)",
+    )
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=DEFAULT_REQUEST_DELAY,
+        help="Seconds to wait between API requests",
+    )
     args = parser.parse_args()
     today = date.today()
     cutoff = date.fromisoformat(args.since) if args.since else today - timedelta(days=730)
@@ -462,29 +588,19 @@ def main() -> None:
     else:
         if not 1 <= args.page_size <= 500 or args.max_pages < 1:
             parser.error("Page size must be 1–500 and max-pages must be positive.")
-        payload = []
-        search_after = None
-        for page in range(args.max_pages):
-            params = {
-                "NoticeType": args.notice_type,
-                "PublicationDateFrom": cutoff.isoformat(),
-                "PublicationDateTo": today.isoformat(),
-                "OrganizationCity": args.city,
-                "PageSize": args.page_size,
-            }
-            if search_after:
-                params["SearchAfter"] = search_after
-            response = httpx.get(args.url, params=params, timeout=30, follow_redirects=True)
-            response.raise_for_status()
-            page_rows = extract_rows(response.json())
-            payload.extend(page_rows)
-            if len(page_rows) < args.page_size:
-                break
-            next_cursor = page_rows[-1].get("objectId")
-            if not next_cursor or next_cursor == search_after:
-                raise SystemExit("No new ObjectId cursor; import stopped.")
-            search_after = next_cursor
-        else:
+        with httpx.Client(timeout=60, follow_redirects=True) as client:
+            payload, truncated = fetch_notices(
+                client,
+                url=args.url,
+                city=args.city,
+                since=cutoff,
+                until=today,
+                notice_type=args.notice_type,
+                page_size=args.page_size,
+                max_pages=args.max_pages,
+                delay=args.delay,
+            )
+        if truncated:
             print(f"Reached the limit of {args.max_pages} pages; more notices may exist.")
 
     try:
@@ -496,6 +612,10 @@ def main() -> None:
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         snapshot.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         raise SystemExit(f"{error} Response saved to {snapshot}.") from error
+
+    if args.resolve_start_dates:
+        with httpx.Client(timeout=60, follow_redirects=True) as client:
+            resolve_procedure_starts(rows, client, url=args.url, delay=args.delay)
 
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:

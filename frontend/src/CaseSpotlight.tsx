@@ -1,5 +1,8 @@
-import type { GraphData, GraphNode } from "./types";
+import { useEffect, useState } from "react";
+import { fetchProcurementFlags } from "./api";
+import type { GraphData, GraphNode, RedFlag } from "./types";
 import { t, type Language } from "./i18n";
+import { disclaimer, explainFlag, flagTitle } from "./redFlags";
 
 function dateLabel(value: unknown, language: Language): string {
   if (typeof value !== "string" || !value) return t("Date unavailable", language);
@@ -7,7 +10,8 @@ function dateLabel(value: unknown, language: Language): string {
 }
 
 function resultLabel(value: unknown, language: Language): string {
-  if (value === "zawarcieUmowy") return t("Contract awarded", language);
+  // Multi-part notices list one result per part ("zawarcieUmowy;uniewaznienie"): any signed part counts.
+  if (typeof value === "string" && value.split(";").includes("zawarcieUmowy")) return t("Contract awarded", language);
   if (value === "Awarded") return t("Awarded", language);
   if (typeof value === "string" && value.toLowerCase().includes("uniewa")) return t("Procurement cancelled", language);
   return value ? t("Outcome reported in notice", language) : t("Outcome not provided", language);
@@ -35,6 +39,17 @@ export default function CaseSpotlight({ data, language, selectedNode, loading, e
     .map((edge) => byId.get(edge.target_id))
     .filter((node): node is GraphNode => Boolean(node)) ?? [];
   const source = typeof tender?.details.source_url === "string" ? tender.details.source_url : buyerEdge?.evidence_url;
+  const tenderId = tender?.id ?? null;
+  const [flags, setFlags] = useState<{ id: string; items: RedFlag[] } | null>(null);
+  useEffect(() => {
+    if (!tenderId) return;
+    let cancelled = false;
+    fetchProcurementFlags(tenderId)
+      .then((result) => { if (!cancelled) setFlags({ id: tenderId, items: result.flags }); })
+      .catch(() => { if (!cancelled) setFlags({ id: tenderId, items: [] }); });
+    return () => { cancelled = true; };
+  }, [tenderId]);
+  const caseFlags = flags && flags.id === tenderId ? flags.items : null;
 
   return <section className="case-spotlight" id="case" aria-label={t("Selected procurement", language)} aria-live="polite" aria-busy={loading}>
     <div className="case-heading"><span>{t("01 / SELECTED NOTICE", language)}</span><a href="#catalog">{t("Choose another from the registry", language)} ↓</a></div>
@@ -48,6 +63,10 @@ export default function CaseSpotlight({ data, language, selectedNode, loading, e
         <div className="case-answer"><span>{t("02 / WHICH SUPPLIER?", language)}</span><strong>{suppliers[0]?.label ?? t("Supplier not named", language)}</strong><small>{suppliers.length > 1 ? `${t("and", language)} ${suppliers.length - 1} ${t("other suppliers", language)}` : suppliers.length ? t("Supplier named in notice", language) : t("No name in available data", language)}</small></div>
         <div className="case-answer case-outcome"><span>{t("03 / WHAT OUTCOME?", language)}</span><strong>{resultLabel(tender.details.procedure_result ?? tender.details.status, language)}</strong><small>{dataset === "demo" ? t("Fictional demo result", language) : t("Check details in the source", language)}</small></div>
       </div>
+      {caseFlags && <div className={`case-signals ${caseFlags.length ? "" : "case-signals-none"}`} aria-label={t("Statistical signals", language)}>
+        <div className="case-signals-head"><span>{t("04 / STATISTICAL SIGNALS", language)}</span><small>{disclaimer(language)}</small></div>
+        {caseFlags.length ? <ul>{caseFlags.map((flag) => <li key={flag.code}><b>{flagTitle(flag.code, language)}</b><p>{explainFlag(flag, language)}</p></li>)}</ul> : <p className="case-signals-empty">{t("No statistical signal for this notice in the loaded data.", language)}</p>}
+      </div>}
       <div className="case-actions">
         {source ? <a className="case-source" href={source} target="_blank" rel="noreferrer">{t("Open original notice", language)} <span>↗</span></a> : <span className="case-no-source">{dataset === "demo" ? t("Demo scenario · no source document", language) : t("Source URL unavailable", language)}</span>}
         <button onClick={onOpenMap}>{t("Explore on the map", language)} <span>→</span></button>

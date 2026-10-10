@@ -92,3 +92,15 @@
   .source-note { margin: 0 20px 35px; display: block; }
   .source-note p { margin: 16px 0; }
 }
+
+.case-signals { margin: 0 23px 20px; padding: 16px 18px; border: 1px solid #e6c7a8; background: #fdf6ee; }
+.case-signals-none { border-color: #d3dccf; background: #f3f6ef; }
+.case-signals-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; margin-bottom: 10px; }
+.case-signals-head span { color: #8a4c22; font: 10px var(--mono); letter-spacing: .08em; }
+.case-signals-none .case-signals-head span { color: #57735d; }
+.case-signals-head small { max-width: 620px; color: #7a6a5b; font-size: 11px; line-height: 1.5; }
+.case-signals ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.case-signals li b { color: #5e3415; font-size: 13px; }
+.case-signals li p { margin: 3px 0 0; color: #5f5246; font-size: 12px; line-height: 1.55; }
+.case-signals-empty { margin: 0; color: #5d7063; font-size: 12px; }
+@media (max-width: 700px) { .case-signals { margin: 0 16px 18px; } }
